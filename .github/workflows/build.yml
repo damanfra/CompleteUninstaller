@@ -1,0 +1,91 @@
+name: Build
+
+on:
+  push:
+    branches: [main, linux]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    name: Windows (WPF)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Compilar e testar
+        run: |
+          dotnet build -c Release
+          dotnet test -c Release --no-build
+
+      - name: Publicar CompleteUninstaller.exe
+        run: >
+          dotnet publish src/CompleteUninstaller.App -c Release -r win-x64
+          --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -o out/windows
+
+      - name: Empacotar
+        shell: pwsh
+        run: Compress-Archive -Path out/windows/CompleteUninstaller.exe -DestinationPath CompleteUninstaller-win-x64.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CompleteUninstaller-win-x64
+          path: CompleteUninstaller-win-x64.zip
+
+  linux:
+    name: Linux (Avalonia)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      # Os testes dos parsers e das regras de segurança rodam aqui num Linux de verdade.
+      - name: Compilar e testar
+        run: |
+          dotnet build CompleteUninstaller.Linux.slnf -c Release
+          dotnet test CompleteUninstaller.Linux.slnf -c Release --no-build
+
+      - name: Publicar o executável
+        run: >
+          dotnet publish src/CompleteUninstaller.App.Avalonia -c Release -r linux-x64
+          --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -o out/linux
+
+      - name: Empacotar
+        run: |
+          chmod +x out/linux/complete-uninstaller
+          tar -czf CompleteUninstaller-linux-x64.tar.gz -C out/linux complete-uninstaller
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CompleteUninstaller-linux-x64
+          path: CompleteUninstaller-linux-x64.tar.gz
+
+  release:
+    name: Publicar release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Criar a release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          gh release create "${{ github.ref_name }}" dist/*
+          --repo "${{ github.repository }}"
+          --title "${{ github.ref_name }}"
+          --generate-notes
