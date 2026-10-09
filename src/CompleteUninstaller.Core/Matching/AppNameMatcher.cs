@@ -59,14 +59,25 @@ public sealed class AppNameMatcher
         "framework", "library", "components", "component", "module", "x64", "x86", "64", "32",
     };
 
+    private readonly HashSet<string> _generic;
     private readonly HashSet<string> _exactCompacts = new(StringComparer.Ordinal);
     private readonly HashSet<string> _nameTokens;
     private readonly HashSet<string> _publisherTokens;
     private readonly string[] _coreTokens;
     private readonly string _coreCompact;
 
-    public AppNameMatcher(string displayName, string? publisher, IEnumerable<string>? alternativeNames = null)
+    public AppNameMatcher(
+        string displayName,
+        string? publisher,
+        IEnumerable<string>? alternativeNames = null,
+        IEnumerable<string>? extraGenericNames = null)
     {
+        _generic = extraGenericNames is null
+            ? GenericNames
+            : new HashSet<string>(
+                GenericNames.Concat(extraGenericNames.Select(n => NameNormalizer.Compact(NameNormalizer.Normalize(n)))),
+                StringComparer.Ordinal);
+
         NameNormalized = NameNormalizer.Normalize(displayName);
         var withParentheticals = NameNormalizer.Normalize(displayName, stripParentheticals: false);
 
@@ -119,7 +130,7 @@ public sealed class AppNameMatcher
 
         var normalized = NameNormalizer.Normalize(name);
         var compact = NameNormalizer.Compact(normalized);
-        if (compact.Length < 3 || GenericNames.Contains(compact))
+        if (compact.Length < 3 || _generic.Contains(compact))
         {
             return NameMatch.None;
         }
@@ -169,7 +180,7 @@ public sealed class AppNameMatcher
     private void AddExact(string normalized)
     {
         var compact = NameNormalizer.Compact(normalized);
-        if (compact.Length >= 3 && !GenericNames.Contains(compact))
+        if (compact.Length >= 3 && !_generic.Contains(compact))
         {
             _exactCompacts.Add(compact);
         }

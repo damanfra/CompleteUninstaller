@@ -8,14 +8,21 @@ namespace CompleteUninstaller.Core.Leftovers;
 /// </summary>
 public sealed class LeftoverCollector
 {
-    private readonly Dictionary<string, LeftoverItem> _items = new(StringComparer.OrdinalIgnoreCase);
+    private readonly IPathRules _rules;
+    private readonly Dictionary<string, LeftoverItem> _items;
+
+    public LeftoverCollector(IPathRules? rules = null)
+    {
+        _rules = rules ?? WindowsPathRules.Instance;
+        _items = new Dictionary<string, LeftoverItem>(_rules.Comparer);
+    }
 
     public int Count => _items.Count;
 
     public void Add(LeftoverItem item)
     {
         var key = item.IsFileSystem
-            ? "fs|" + WinPath.Normalize(item.Target)
+            ? "fs|" + _rules.Normalize(item.Target)
             : $"{item.Kind}|{item.Target}";
 
         if (_items.TryGetValue(key, out var existing))
@@ -46,10 +53,10 @@ public sealed class LeftoverCollector
             .Where(i => !(i.IsFileSystem && folders.Any(f =>
                 !ReferenceEquals(f, i)
                 && f.Confidence >= i.Confidence
-                && WinPath.IsStrictlyUnder(i.Target, f.Target))))
+                && _rules.IsStrictlyUnder(i.Target, f.Target))))
             .OrderBy(i => i.Kind)
             .ThenByDescending(i => i.Confidence)
-            .ThenBy(i => i.Target, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(i => i.Target, _rules.Comparer)
             .ToList();
 
         return result;

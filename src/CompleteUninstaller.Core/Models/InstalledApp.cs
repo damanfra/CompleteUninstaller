@@ -10,6 +10,18 @@ public enum AppSource
 
     /// <summary>Pacote AppX/MSIX (Microsoft Store e afins).</summary>
     Store,
+
+    /// <summary>Pacote .deb (Debian, Ubuntu e derivados).</summary>
+    Dpkg,
+
+    /// <summary>Pacote .rpm (Fedora, RHEL, openSUSE).</summary>
+    Rpm,
+
+    /// <summary>Aplicativo Flatpak.</summary>
+    Flatpak,
+
+    /// <summary>Pacote Snap.</summary>
+    Snap,
 }
 
 public enum RegistryScope
@@ -38,6 +50,12 @@ public enum AppFlags
 
     /// <summary>Pacote da Store pré-instalado com o Windows (provisionado na imagem do sistema).</summary>
     Provisioned = 16,
+
+    /// <summary>Linux: biblioteca, runtime ou dependência (não é um aplicativo que o usuário abre).</summary>
+    Library = 32,
+
+    /// <summary>Linux: tem atalho (.desktop) no menu de aplicativos.</summary>
+    HasDesktopEntry = 64,
 }
 
 /// <summary>Localização de uma chave de desinstalação no Registro.</summary>
@@ -105,6 +123,27 @@ public sealed class InstalledApp
     /// <summary>Logotipo declarado pelo pacote da Store (pode não existir no tamanho exato; ver IconLocator).</summary>
     public string? LogoPath { get; init; }
 
+    /// <summary>Linux: nome do pacote (dpkg/rpm/snap) ou ID do aplicativo (Flatpak).</summary>
+    public string? PackageName { get; init; }
+
+    /// <summary>Linux: arquitetura do pacote (amd64, x86_64...).</summary>
+    public string? PackageArch { get; init; }
+
+    /// <summary>Linux: Flatpak "user" ou "system".</summary>
+    public string? PackageScope { get; init; }
+
+    /// <summary>Linux: arquivo .desktop principal do aplicativo.</summary>
+    public string? DesktopFile { get; set; }
+
+    /// <summary>Linux: nome do ícone declarado no .desktop (ou caminho).</summary>
+    public string? IconName { get; set; }
+
+    /// <summary>Linux: nomes adicionais (executáveis, nome do .desktop) que ajudam a achar sobras.</summary>
+    public List<string> ExtraNames { get; } = [];
+
+    /// <summary>Linux: arquivos e pastas que o pacote instalou, lidos ANTES da desinstalação.</summary>
+    public IReadOnlyList<string>? OwnedPaths { get; set; }
+
     public AppFlags Flags { get; set; }
 
     public bool IsSystemComponent => Flags.HasFlag(AppFlags.SystemComponent);
@@ -113,8 +152,13 @@ public sealed class InstalledApp
 
     public bool IsNotListedByWindows => Flags.HasFlag(AppFlags.NotListedByWindows);
 
+    public bool IsLibrary => Flags.HasFlag(AppFlags.Library);
+
+    public bool IsLinuxPackage => Source is AppSource.Dpkg or AppSource.Rpm or AppSource.Flatpak or AppSource.Snap;
+
     public bool HasQuietUninstall =>
-        !string.IsNullOrWhiteSpace(QuietUninstallString) || IsWindowsInstaller || MsiProductCode is not null;
+        !string.IsNullOrWhiteSpace(QuietUninstallString) || IsWindowsInstaller || MsiProductCode is not null
+        || IsLinuxPackage;
 
     public string SourceText => Source switch
     {
@@ -126,6 +170,10 @@ public sealed class InstalledApp
         },
         AppSource.WindowsInstaller => "Windows Installer",
         AppSource.Store => "Store / MSIX",
+        AppSource.Dpkg => "Pacote .deb (apt)",
+        AppSource.Rpm => "Pacote .rpm (dnf)",
+        AppSource.Flatpak => PackageScope == "user" ? "Flatpak (usuário)" : "Flatpak",
+        AppSource.Snap => "Snap",
         _ => Source.ToString(),
     };
 
