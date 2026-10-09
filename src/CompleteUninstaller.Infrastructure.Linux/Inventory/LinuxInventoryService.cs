@@ -187,7 +187,21 @@ public sealed class LinuxInventoryService
             return [];
         }
 
-        return PackageParsers.ParseSnap(list.Output);
+        var snaps = PackageParsers.ParseSnap(list.Output);
+        foreach (var snap in snaps)
+        {
+            // O tamanho é o do arquivo comprimido (.snap) da revisão instalada.
+            try
+            {
+                var file = new FileInfo($"/var/lib/snapd/snaps/{snap.PackageName}_{snap.PackageRevision}.snap");
+                snap.EstimatedSizeBytes = file.Exists ? file.Length : null;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+            }
+        }
+
+        return snaps;
     }
 
     /// <summary>Liga cada pacote ao seu atalho .desktop: nome amigável, ícone e "é um aplicativo, não uma biblioteca".</summary>

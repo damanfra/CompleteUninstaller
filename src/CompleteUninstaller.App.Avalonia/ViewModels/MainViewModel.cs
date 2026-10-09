@@ -23,6 +23,7 @@ public sealed class MainViewModel : ObservableObject
     private string _searchText = string.Empty;
     private bool _showLibraries;
     private bool _showSystemComponents;
+    private bool _hideDistroPackages;
     private SourceFilter _selectedSource;
     private CancellationTokenSource? _iconLoading;
     private bool _isBusy;
@@ -107,6 +108,24 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>Texto da opção, com o nome da distribuição em uso ("Ubuntu", "Fedora Linux"...).</summary>
+    public string DistroFilterText =>
+        _services.Environment.Distro.Name is { Length: > 0 } name
+            ? $"Ocultar pacotes da distribuição ({name})"
+            : "Ocultar pacotes da distribuição";
+
+    public bool HideDistroPackages
+    {
+        get => _hideDistroPackages;
+        set
+        {
+            if (SetProperty(ref _hideDistroPackages, value))
+            {
+                ApplyFilter();
+            }
+        }
+    }
+
     public SourceFilter SelectedSource
     {
         get => _selectedSource;
@@ -170,7 +189,7 @@ public sealed class MainViewModel : ObservableObject
             var result = await _services.Inventory.LoadAsync();
 
             _all.Clear();
-            _all.AddRange(result.Apps.Select(a => new AppRowViewModel(a)));
+            _all.AddRange(result.Apps.Select(a => new AppRowViewModel(a, _services.Environment.Distro)));
             _lastErrors = result.Errors;
             ApplyFilter(selectedId);
             StartIconLoading();
@@ -190,6 +209,11 @@ public sealed class MainViewModel : ObservableObject
         }
 
         if (!ShowLibraries && app.IsLibrary)
+        {
+            return false;
+        }
+
+        if (HideDistroPackages && row.IsDistroPackage)
         {
             return false;
         }

@@ -1,3 +1,4 @@
+using CompleteUninstaller.Core.Linux;
 using CompleteUninstaller.Core.Paths;
 using CompleteUninstaller.Core.Safety;
 using CompleteUninstaller.Infrastructure.Linux.Native;
@@ -35,13 +36,17 @@ public sealed class LinuxEnvironment
     private static readonly string[] DefaultPersonalFolders =
         ["Desktop", "Documents", "Downloads", "Music", "Pictures", "Videos", "Templates", "Public"];
 
-    private LinuxEnvironment(string userName, string home, bool isRoot, IReadOnlyList<UnixProfile> profiles)
+    private LinuxEnvironment(string userName, string home, bool isRoot, IReadOnlyList<UnixProfile> profiles, OsRelease distro)
     {
+        Distro = distro;
         UserName = userName;
         Home = home;
         IsRoot = isRoot;
         Profiles = profiles;
     }
+
+    /// <summary>A distribuição em uso (de /etc/os-release).</summary>
+    public OsRelease Distro { get; }
 
     public string UserName { get; }
 
@@ -71,7 +76,26 @@ public sealed class LinuxEnvironment
         var personal = ReadUserDirs(home).Concat(DefaultPersonalFolders.Select(f => UnixPath.Combine(home, f)))
             .Distinct(StringComparer.Ordinal)
             .ToList();
-        return new LinuxEnvironment(user, home, Libc.IsRoot(), [new UnixProfile(user, home, personal)]);
+        return new LinuxEnvironment(user, home, Libc.IsRoot(), [new UnixProfile(user, home, personal)], ReadOsRelease());
+    }
+
+    private static OsRelease ReadOsRelease()
+    {
+        foreach (var file in new[] { "/etc/os-release", "/usr/lib/os-release" })
+        {
+            try
+            {
+                if (File.Exists(file))
+                {
+                    return OsRelease.Parse(File.ReadAllText(file));
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+            }
+        }
+
+        return OsRelease.Unknown;
     }
 
     /// <summary>~/.config/user-dirs.dirs: XDG_DOCUMENTS_DIR="$HOME/Documentos" (pastas com nome traduzido).</summary>

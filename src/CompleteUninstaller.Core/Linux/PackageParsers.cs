@@ -34,6 +34,12 @@ public static class PackageParsers
 
     private static readonly HashSet<string> SnapCoreNames = new(StringComparer.Ordinal) { "core", "snapd", "bare" };
 
+    /// <summary>Snaps de apoio do Ubuntu e afins: não são programas que a pessoa abre.</summary>
+    private static readonly HashSet<string> SnapSupportNames = new(StringComparer.Ordinal)
+    {
+        "snapd-desktop-integration", "prompting-client", "gtk-common-themes", "snap-store-proxy-client",
+    };
+
     /// <summary>Resultado do dpkg: pacotes instalados e pacotes removidos que deixaram configuração (estado "rc").</summary>
     public sealed record DpkgResult(List<InstalledApp> Installed, List<string> ResidualConfig);
 
@@ -241,7 +247,9 @@ public static class PackageParsers
             {
                 flags |= AppFlags.SystemComponent | AppFlags.Library;
             }
-            else if (name.StartsWith("gnome-", StringComparison.Ordinal) && name.Any(char.IsDigit)
+            else if (SnapSupportNames.Contains(name)
+                     || name.StartsWith("snapd-", StringComparison.Ordinal)
+                     || name.StartsWith("gnome-", StringComparison.Ordinal) && name.Any(char.IsDigit)
                      || name.StartsWith("gtk-common-themes", StringComparison.Ordinal)
                      || name.StartsWith("mesa-", StringComparison.Ordinal)
                      || name.StartsWith("kf5-", StringComparison.Ordinal)
@@ -257,6 +265,7 @@ public static class PackageParsers
                 DisplayName = name,
                 Source = AppSource.Snap,
                 PackageName = name,
+                PackageRevision = p[2],
                 DisplayVersion = p[1],
                 Publisher = publisher is "" or "-" ? null : publisher,
                 Flags = flags,

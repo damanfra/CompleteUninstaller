@@ -12,14 +12,18 @@ public sealed class AppRowViewModel : ObservableObject
 {
     private IImage? _icon;
 
-    public AppRowViewModel(InstalledApp app)
+    public AppRowViewModel(InstalledApp app, OsRelease distro)
     {
         App = app;
+        IsDistroPackage = distro.IsDistroPublisher(app.Publisher);
         Tags = BuildTags(app);
         RemoveCommandText = LinuxUninstallCommands.Build(app) is { Remove: { } remove } ? remove.ToString() : "—";
     }
 
     public InstalledApp App { get; }
+
+    /// <summary>O fabricante é a própria distribuição (Ubuntu Developers, Debian Maintainers, Fedora Project...).</summary>
+    public bool IsDistroPackage { get; }
 
     /// <summary>Ícone carregado em segundo plano depois que a lista aparece.</summary>
     public IImage? Icon

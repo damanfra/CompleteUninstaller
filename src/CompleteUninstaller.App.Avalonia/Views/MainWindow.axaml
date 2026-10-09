@@ -35,6 +35,8 @@
                           ToolTip.Tip="Pacotes que não têm atalho no menu e foram instalados como dependência de outro" />
                 <CheckBox Content="Componentes do sistema" IsChecked="{Binding ShowSystemComponents}" Margin="0,2,0,2"
                           ToolTip.Tip="Pacotes essenciais, de prioridade 'required' ou 'important', base do Snap e afins" />
+                <CheckBox Content="{Binding DistroFilterText}" IsChecked="{Binding HideDistroPackages}" Margin="20,2,0,2"
+                          ToolTip.Tip="Esconde o que tem como fabricante a própria distribuição (e a de que ela deriva), lida de /etc/os-release" />
             </WrapPanel>
         </DockPanel>
 
@@ -60,10 +62,10 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
                     <DataGridTextColumn Header="Nome" Binding="{Binding Name}" Width="2.2*" />
-                    <DataGridTextColumn Header="Versão" Binding="{Binding Version}" Width="130" />
+                    <DataGridTextColumn Header="Versão" Binding="{Binding Version}" Width="170" />
                     <DataGridTextColumn Header="Fabricante" Binding="{Binding Publisher}" Width="1.2*" />
-                    <DataGridTextColumn Header="Tamanho" Binding="{Binding Size}" Width="90" />
-                    <DataGridTextColumn Header="Origem" Binding="{Binding Source}" Width="140" />
+                    <DataGridTextColumn Header="Tamanho" Binding="{Binding Size}" Width="100" />
+                    <DataGridTextColumn Header="Origem" Binding="{Binding Source}" Width="170" />
                     <DataGridTextColumn Header="Observações" Binding="{Binding Tags}" Width="*" />
                 </DataGrid.Columns>
             </DataGrid>

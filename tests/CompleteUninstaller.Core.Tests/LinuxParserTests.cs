@@ -451,3 +451,80 @@ public class SimulationResultTests
     public void Apt_uses_the_exit_code(int exitCode, bool expected) =>
         Assert.Equal(expected, LinuxUninstallCommands.SimulationSucceeded(App(AppSource.Dpkg, "firefox"), exitCode, "Remv firefox [1]"));
 }
+
+public class OsReleaseTests
+{
+    private const string Ubuntu =
+        "PRETTY_NAME=\"Ubuntu 26.04 LTS\"\nNAME=\"Ubuntu\"\nVERSION_ID=\"26.04\"\nID=ubuntu\nID_LIKE=debian\nHOME_URL=\"https://www.ubuntu.com/\"\n";
+
+    private const string Fedora = "NAME=\"Fedora Linux\"\nID=fedora\nVERSION_ID=41\n";
+
+    private const string Mint = "NAME=\"Linux Mint\"\nID=linuxmint\nID_LIKE=\"ubuntu debian\"\n";
+
+    private const string Arch = "NAME=\"Arch Linux\"\nID=arch\n";
+
+    [Fact]
+    public void Parses_fields()
+    {
+        var os = OsRelease.Parse(Ubuntu);
+
+        Assert.Equal("ubuntu", os.Id);
+        Assert.Equal(["debian"], os.IdLike);
+        Assert.Equal("Ubuntu", os.Name);
+    }
+
+    [Theory]
+    [InlineData(Ubuntu, "Ubuntu Developers", true)]
+    [InlineData(Ubuntu, "Canonical", true)]                  // publicador dos snaps
+    [InlineData(Ubuntu, "Debian X Strike Force", true)]      // ID_LIKE=debian
+    [InlineData(Ubuntu, "Debian QA Group", true)]
+    [InlineData(Ubuntu, "Language pack maintainers", false)] // nenhuma palavra da distro
+    [InlineData(Ubuntu, "Chrome Linux Team", false)]
+    [InlineData(Ubuntu, "Ubuntuzilla", false)]               // palavra inteira, não prefixo
+    [InlineData(Ubuntu, "Mozilla", false)]
+    [InlineData(Ubuntu, "", false)]
+    [InlineData(Ubuntu, null, false)]
+    [InlineData(Fedora, "Fedora Project", true)]
+    [InlineData(Fedora, "Ubuntu Developers", false)]         // outra distro: não é "da distribuição"
+    [InlineData(Mint, "Linux Mint", true)]
+    [InlineData(Mint, "Ubuntu Developers", true)]            // Mint deriva do Ubuntu e do Debian
+    [InlineData(Mint, "Debian Python Team", true)]
+    [InlineData(Arch, "Arch Linux", true)]
+    [InlineData(Arch, "Ubuntu Developers", false)]
+    public void Distro_publishers(string osRelease, string? publisher, bool expected) =>
+        Assert.Equal(expected, OsRelease.Parse(osRelease).IsDistroPublisher(publisher));
+
+    [Fact]
+    public void Unknown_distro_hides_nothing()
+    {
+        Assert.False(OsRelease.Unknown.IsDistroPublisher("Ubuntu Developers"));
+        Assert.False(OsRelease.Parse(string.Empty).IsDistroPublisher("Debian Maintainers"));
+    }
+}
+
+public class SnapDetailsTests
+{
+    private const string Output =
+        "Name                      Version   Rev   Tracking       Publisher   Notes\n" +
+        "snapd-desktop-integration 0.9       253   latest/stable  canonical** -\n" +
+        "prompting-client          0+git.dd8c750 214 latest/stable canonical** -\n" +
+        "firefox                   154.0-1   9000  latest/stable  mozilla**   -\n";
+
+    [Fact]
+    public void Revision_is_kept_for_the_size_lookup()
+    {
+        var firefox = PackageParsers.ParseSnap(Output).Single(a => a.PackageName == "firefox");
+
+        Assert.Equal("9000", firefox.PackageRevision);
+    }
+
+    [Fact]
+    public void Support_snaps_are_hidden_like_libraries()
+    {
+        var apps = PackageParsers.ParseSnap(Output).ToDictionary(a => a.PackageName!);
+
+        Assert.True(apps["snapd-desktop-integration"].IsLibrary);
+        Assert.True(apps["prompting-client"].IsLibrary);
+        Assert.False(apps["firefox"].IsLibrary);
+    }
+}
