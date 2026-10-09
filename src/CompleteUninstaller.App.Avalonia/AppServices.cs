@@ -3,6 +3,7 @@ using CompleteUninstaller.Infrastructure.Linux.Inventory;
 using CompleteUninstaller.Infrastructure.Linux.Leftovers;
 using CompleteUninstaller.Infrastructure.Linux.Removal;
 using CompleteUninstaller.Infrastructure.Linux.Uninstall;
+using CompleteUninstaller.Updater;
 
 namespace CompleteUninstaller.App.Avalonia;
 
@@ -21,6 +22,8 @@ public sealed class AppServices
 
     public required QuarantineStore Quarantine { get; init; }
 
+    public required UpdateService Updates { get; init; }
+
     public static AppServices Create()
     {
         var environment = LinuxEnvironment.Detect();
@@ -34,6 +37,7 @@ public sealed class AppServices
             Scanner = new LinuxLeftoverScanner(environment),
             Removal = new RemovalService(environment, quarantine, helper),
             Quarantine = quarantine,
+            Updates = new UpdateService(),
         };
     }
 }

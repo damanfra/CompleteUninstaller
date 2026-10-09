@@ -17,6 +17,14 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      # A versão do executável vem da tag (v1.2.3 -> 1.2.3). Sem tag, é 0.0.0-dev: o auto-update
+      # considera qualquer release publicada mais nova que um build de desenvolvimento.
+      - name: Definir a versão
+        id: version
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"; else echo "value=0.0.0-dev" >> "$GITHUB_OUTPUT"; fi
+
       - name: Compilar e testar
         run: |
           dotnet build -c Release
@@ -26,6 +34,7 @@ jobs:
         run: >
           dotnet publish src/CompleteUninstaller.App -c Release -r win-x64
           --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:Version=${{ steps.version.outputs.value }}
           -o out/windows
 
       - name: Empacotar
@@ -46,6 +55,11 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      - name: Definir a versão
+        id: version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"; else echo "value=0.0.0-dev" >> "$GITHUB_OUTPUT"; fi
+
       # Os testes dos parsers e das regras de segurança rodam aqui num Linux de verdade.
       - name: Compilar e testar
         run: |
@@ -56,6 +70,7 @@ jobs:
         run: >
           dotnet publish src/CompleteUninstaller.App.Avalonia -c Release -r linux-x64
           --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:Version=${{ steps.version.outputs.value }}
           -o out/linux
 
       - name: Empacotar
@@ -80,6 +95,13 @@ jobs:
         with:
           path: dist
           merge-multiple: true
+
+      # O auto-update só instala um arquivo se o SHA-256 dele conferir com este.
+      - name: Gerar o SHA256SUMS.txt
+        working-directory: dist
+        run: |
+          sha256sum CompleteUninstaller-win-x64.zip CompleteUninstaller-linux-x64.tar.gz > SHA256SUMS.txt
+          cat SHA256SUMS.txt
 
       - name: Criar a release
         env:

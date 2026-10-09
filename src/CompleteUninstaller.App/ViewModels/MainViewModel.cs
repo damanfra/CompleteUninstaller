@@ -168,6 +168,8 @@ public sealed class MainViewModel : ObservableObject
 
     public bool HasNoSelection => SelectedApp is null;
 
+    public void SetStatus(string text) => StatusText = text;
+
     public async Task RefreshAsync()
     {
         if (IsBusy)

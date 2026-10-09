@@ -17,7 +17,7 @@ Projeto pessoal do Daniel. Pasta: `C:\Users\daniel.msouza\Projetos\CompleteUnins
 
 - **Fase 1 implementada:** níveis **Seguro** e **Moderado**.
 - **Fase 2 (não implementada):** limpeza de **Registro** e nível **Avançado**. Veja "Roteiro" no `README.md`.
-- ✅ **Build OK e testes passando** (07/10/2026, Visual Studio 2026; hoje são 305 com a branch `linux`). Só foi preciso corrigir a falta de
+- ✅ **Build OK e testes passando** (07/10/2026, Visual Studio 2026; hoje são 358 com a branch `linux`). Só foi preciso corrigir a falta de
   `using System.IO;` no projeto WPF.
 - 07/10: adicionados ícones na lista e filtros "Ocultar itens do Windows" (ligado por padrão) e
   "Ocultar apps da Microsoft". Aguardando build/teste do Daniel.
@@ -60,6 +60,24 @@ filosofia (nada é apagado direto; quarentena restaurável). O app do Windows (W
 7. Duas quarentenas: `~/.local/share/CompleteUninstaller/Quarantine` (pasta pessoal) e
    `/var/lib/CompleteUninstaller/Quarantine` (sistema, só o auxiliar acessa; o manifesto do usuário a referencia).
 8. Nomes de pacote são validados por regex e executados com `ArgumentList` (sem shell), sempre com `LC_ALL=C`.
+
+### Auto-atualização (Windows e Linux)
+
+- Projeto `CompleteUninstaller.Updater` (`net10.0`, só BCL) + lógica pura em `Core/Updates` (`AppVersion`, `UpdatePlanner`).
+  `UpdateFlow` é o fluxo compartilhado pelas duas UIs: verifica (silencioso ao abrir; botão "Atualizações" responde
+  sempre), **pergunta**, baixa, confere, troca o executável e reinicia. Nunca atualiza sem confirmação.
+- Fonte: `GET api.github.com/repos/damanfra/CompleteUninstaller/releases/latest` (o repositório precisa ser **público**).
+  Ignora rascunhos e pré-lançamentos. Pacotes: `CompleteUninstaller-win-x64.zip` (`CompleteUninstaller.exe`) e
+  `CompleteUninstaller-linux-x64.tar.gz` (`complete-uninstaller`).
+- **Integridade:** só instala se o SHA-256 do pacote conferir com o `SHA256SUMS.txt` da mesma release (gerado pela Action);
+  sem esse arquivo a atualização é recusada. Links só de HTTPS `github.com/{repo}/releases/download/`. Limite de 500 MB.
+  Isso protege de arquivo corrompido ou de link trocado, **não** de uma release publicada por quem controla o repositório
+  (não há assinatura de código).
+- Troca do arquivo: Windows renomeia o `.exe` em uso para `.old` e o apaga na próxima abertura; Linux troca por
+  renomeação atômica e restaura `chmod`. Não funciona via `dotnet app.dll` nem em pasta sem permissão de escrita (avisa).
+- **Versão** vem da tag: a Action usa `-p:Version=1.2.3` (tag `v1.2.3`); sem tag é `0.0.0-dev`. Build local = `0.1.0`
+  (`Directory.Build.props`). Para lançar: `git tag v0.2.0 && git push origin v0.2.0`.
+- Nada do fluxo de rede/troca foi testado com uma release real ainda: só com servidor simulado nos testes.
 
 Limitações conhecidas: só o usuário atual é varrido (não os outros `/home/*`); sem cron; `~/.mozilla`-style
 (pasta com nome diferente do pacote) não é achada; ícones só PNG; `dnf remove --assumeno` pede senha (o dnf pede duas vezes: simulação e remoção); o auxiliar sob `pkexec` precisa achar o .NET (repassamos `DOTNET_ROOT`; para testar, publique self-contained).

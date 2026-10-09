@@ -51,6 +51,16 @@ dotnet publish src/CompleteUninstaller.App.Avalonia -c Release -r linux-x64 --se
 - **Status:** os parsers e as regras de segurança têm testes, mas os adaptadores ainda **não foram executados em
   um Linux real**. Teste primeiro numa VM ou no WSL2 com WSLg.
 
+## Atualizações automáticas
+
+O Complete Uninstaller (Windows e Linux) verifica as [Releases](https://github.com/damanfra/CompleteUninstaller/releases)
+ao abrir e pelo botão **Atualizações**. Se houver versão nova, mostra as novidades e **pergunta** antes de baixar,
+instalar e reiniciar. Só instala se o SHA-256 do arquivo conferir com o `SHA256SUMS.txt` da release.
+
+Para publicar uma versão: `git tag v0.2.0` e `git push origin v0.2.0`. A Action compila, carimba a versão
+no executável, gera os pacotes e o `SHA256SUMS.txt` e cria a release. A atualização automática exige que o
+executável esteja numa pasta com permissão de escrita (ela avisa quando não estiver).
+
 ## Arquitetura
 
 ```

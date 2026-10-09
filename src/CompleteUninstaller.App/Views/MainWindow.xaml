@@ -19,7 +19,9 @@
                         ToolTip="Abre a pasta com o registro de tudo o que foi feito" />
                 <Button Content="Quarentena" Command="{Binding OpenQuarantineCommand}" Padding="14,6" Margin="0,0,8,0"
                         ToolTip="Ver, restaurar ou excluir definitivamente itens removidos" />
-                <Button Content="Atualizar lista" Command="{Binding RefreshCommand}" Padding="14,6" />
+                <Button Content="Atualizar lista" Command="{Binding RefreshCommand}" Padding="14,6" Margin="0,0,8,0" />
+                <Button Content="Atualizações" Click="CheckUpdates_Click" Padding="14,6"
+                        ToolTip="Verifica se há uma versão nova do Complete Uninstaller no GitHub" />
             </StackPanel>
             <StackPanel>
                 <TextBlock Text="Programas instalados" Style="{StaticResource PageTitle}" />

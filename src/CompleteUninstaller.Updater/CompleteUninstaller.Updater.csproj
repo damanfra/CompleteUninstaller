@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Auto-atualização pelas Releases do GitHub. Só BCL (HttpClient, zip, tar): sem pacotes de terceiros. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>CompleteUninstaller.Updater</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CompleteUninstaller.Core\CompleteUninstaller.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="CompleteUninstaller.Core.Tests" />
+  </ItemGroup>
+
+</Project>

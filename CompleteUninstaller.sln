@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompleteUninstaller.Infrast
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompleteUninstaller.App.Avalonia", "src\CompleteUninstaller.App.Avalonia\CompleteUninstaller.App.Avalonia.csproj", "{C0F5ED06-722A-4604-B325-53BF272FA181}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompleteUninstaller.Updater", "src\CompleteUninstaller.Updater\CompleteUninstaller.Updater.csproj", "{72DA58F7-C3A0-485B-8F23-75EF14755F8E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -101,6 +103,18 @@ Global
 		{C0F5ED06-722A-4604-B325-53BF272FA181}.Release|x64.Build.0 = Release|Any CPU
 		{C0F5ED06-722A-4604-B325-53BF272FA181}.Release|x86.ActiveCfg = Release|Any CPU
 		{C0F5ED06-722A-4604-B325-53BF272FA181}.Release|x86.Build.0 = Release|Any CPU
+		{72DA58F7-C3A0-485B-8F23-75EF14755F8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72DA58F7-C3A0-485B-8F23-75EF14755F8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72DA58F7-C3A0-485B-8F23-75EF14755F8E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{72DA58F7-C3A0-485B-8F23-75EF14755F8E}.Debug|x64.Build.0 = Debug|Any CPU
+		{72DA58F7-C3A0-485B-8F23-75EF14755F8E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{72DA58F7-C3A0-485B-8F23-75EF14755F8E}.Debug|x86.Build.0 = Debug|Any CPU
+		{72DA58F7-C3A0-485B-8F23-75EF14755F8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72DA58F7-C3A0-485B-8F23-75EF14755F8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72DA58F7-C3A0-485B-8F23-75EF14755F8E}.Release|x64.ActiveCfg = Release|Any CPU
+		{72DA58F7-C3A0-485B-8F23-75EF14755F8E}.Release|x64.Build.0 = Release|Any CPU
+		{72DA58F7-C3A0-485B-8F23-75EF14755F8E}.Release|x86.ActiveCfg = Release|Any CPU
+		{72DA58F7-C3A0-485B-8F23-75EF14755F8E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -112,5 +126,6 @@ Global
 		{EB12FED2-7267-49B1-8A47-CED8052B8D19} = {85846E91-8142-49A3-BCD0-220487545465}
 		{0D5A9611-1F7C-4EBC-8136-4971DBA5172E} = {033DF4B3-2DF7-479A-93F1-A65A75578E8A}
 		{C0F5ED06-722A-4604-B325-53BF272FA181} = {033DF4B3-2DF7-479A-93F1-A65A75578E8A}
+		{72DA58F7-C3A0-485B-8F23-75EF14755F8E} = {033DF4B3-2DF7-479A-93F1-A65A75578E8A}
 	EndGlobalSection
 EndGlobal

@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CompleteUninstaller.Infrastructure.Linux\CompleteUninstaller.Infrastructure.Linux.csproj" />
+    <ProjectReference Include="..\CompleteUninstaller.Updater\CompleteUninstaller.Updater.csproj" />
   </ItemGroup>
 
 </Project>

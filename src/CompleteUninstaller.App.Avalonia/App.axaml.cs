@@ -18,6 +18,7 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             Log.Info("Complete Uninstaller (Linux) iniciado.");
+            CompleteUninstaller.Updater.UpdateService.CleanupOldVersion();
             var services = AppServices.Create();
             var window = new MainWindow(services);
             desktop.MainWindow = window;

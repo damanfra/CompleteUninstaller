@@ -14,6 +14,8 @@
                 <Button Content="Quarentena" Command="{Binding OpenQuarantineCommand}"
                         ToolTip.Tip="Ver, restaurar ou excluir definitivamente itens removidos" />
                 <Button Content="Atualizar lista" Command="{Binding RefreshCommand}" />
+                <Button Content="Atualizações" Click="CheckUpdates_Click"
+                        ToolTip.Tip="Verifica se há uma versão nova do Complete Uninstaller no GitHub" />
             </StackPanel>
             <StackPanel>
                 <TextBlock Text="Programas instalados" Classes="PageTitle" />
