@@ -17,7 +17,7 @@ Projeto pessoal do Daniel. Pasta: `C:\Users\daniel.msouza\Projetos\CompleteUnins
 
 - **Fase 1 implementada:** níveis **Seguro** e **Moderado**.
 - **Fase 2 (não implementada):** limpeza de **Registro** e nível **Avançado**. Veja "Roteiro" no `README.md`.
-- ✅ **Build OK e testes passando** (07/10/2026, Visual Studio 2026; hoje são 303 com a branch `linux`). Só foi preciso corrigir a falta de
+- ✅ **Build OK e testes passando** (07/10/2026, Visual Studio 2026; hoje são 305 com a branch `linux`). Só foi preciso corrigir a falta de
   `using System.IO;` no projeto WPF.
 - 07/10: adicionados ícones na lista e filtros "Ocultar itens do Windows" (ligado por padrão) e
   "Ocultar apps da Microsoft". Aguardando build/teste do Daniel.

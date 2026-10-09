@@ -19,7 +19,7 @@ public static class PackageParsers
         "%{NAME}\\t%{VERSION}-%{RELEASE}\\t%{ARCH}\\t%{VENDOR}\\t%{SIZE}\\t%{INSTALLTIME}\\t%{SUMMARY}\\t%{URL}\\n";
 
     private static readonly string[] DpkgLibrarySections =
-        ["libs", "oldlibs", "libdevel", "kernel", "debug", "metapackages", "python", "perl", "ruby", "javascript", "introspection"];
+        ["libs", "oldlibs", "libdevel", "kernel", "debug", "metapackages", "python", "perl", "ruby", "javascript", "introspection", "translations"];
 
     private static readonly HashSet<string> RpmCriticalNames = new(StringComparer.Ordinal)
     {
@@ -86,7 +86,9 @@ public static class PackageParsers
                 flags |= AppFlags.SystemComponent | AppFlags.NoRemove;
             }
 
-            if (DpkgLibrarySections.Contains(section) || !isManual)
+            // Pacotes de idioma (language-pack-pt, language-pack-gnome-pt...) são suporte, não programas.
+            if (DpkgLibrarySections.Contains(section) || !isManual
+                || name.StartsWith("language-pack-", StringComparison.Ordinal))
             {
                 flags |= AppFlags.Library;
             }
@@ -132,6 +134,7 @@ public static class PackageParsers
             if (name.StartsWith("lib", StringComparison.Ordinal)
                 || name.StartsWith("python3-", StringComparison.Ordinal)
                 || name.StartsWith("perl-", StringComparison.Ordinal)
+                || name.StartsWith("langpacks-", StringComparison.Ordinal)
                 || name.StartsWith("rubygem-", StringComparison.Ordinal)
                 || RpmLibrarySuffixes.Any(s => name.Contains(s, StringComparison.Ordinal)))
             {

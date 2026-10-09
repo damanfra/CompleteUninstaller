@@ -528,3 +528,32 @@ public class SnapDetailsTests
         Assert.False(apps["firefox"].IsLibrary);
     }
 }
+
+public class LanguagePackTests
+{
+    [Fact]
+    public void Dpkg_language_packs_are_hidden_even_when_installed_manually()
+    {
+        const string output =
+            "ii \tlanguage-pack-pt\tall\t1:26.04\t9\tLanguage pack maintainers <a@b.c>\ttranslations\toptional\t\ttranslation updates for language Portuguese\t\n" +
+            "ii \tlanguage-pack-gnome-pt-base\tall\t1:26.04\t12000\tLanguage pack maintainers <a@b.c>\tgnome\toptional\t\tGNOME translations\t\n" +
+            "ii \thtop\tamd64\t3.3.0\t400\tSomeone <a@b.c>\tutils\toptional\t\tviewer\t\n";
+        var manual = new HashSet<string> { "language-pack-pt", "language-pack-gnome-pt-base", "htop" };
+
+        var apps = PackageParsers.ParseDpkg(output, manual).Installed.ToDictionary(a => a.DisplayName);
+
+        Assert.True(apps["language-pack-pt"].IsLibrary);
+        Assert.True(apps["language-pack-gnome-pt-base"].IsLibrary);
+        Assert.False(apps["htop"].IsLibrary);
+    }
+
+    [Fact]
+    public void Rpm_langpacks_are_hidden()
+    {
+        const string output =
+            "langpacks-pt_BR\t41-1.fc41\tnoarch\tFedora Project\t1000\t1700000000\tBrazilian Portuguese langpacks\t(none)\n" +
+            "glibc-langpack-pt\t2.40-1.fc41\tx86_64\tFedora Project\t1000\t1700000000\tLocale data\t(none)\n";
+
+        Assert.All(PackageParsers.ParseRpm(output), a => Assert.True(a.IsLibrary));
+    }
+}
