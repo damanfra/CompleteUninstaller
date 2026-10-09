@@ -1,0 +1,11 @@
+{
+  "solution": {
+    "path": "CompleteUninstaller.sln",
+    "projects": [
+      "src\\CompleteUninstaller.Core\\CompleteUninstaller.Core.csproj",
+      "src\\CompleteUninstaller.Infrastructure.Linux\\CompleteUninstaller.Infrastructure.Linux.csproj",
+      "src\\CompleteUninstaller.App.Avalonia\\CompleteUninstaller.App.Avalonia.csproj",
+      "tests\\CompleteUninstaller.Core.Tests\\CompleteUninstaller.Core.Tests.csproj"
+    ]
+  }
+}

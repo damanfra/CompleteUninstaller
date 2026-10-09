@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Interface do Linux (Avalonia). Única exceção à regra de não usar pacotes NuGet de terceiros no app. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>CompleteUninstaller.App.Avalonia</RootNamespace>
+    <AssemblyName>complete-uninstaller</AssemblyName>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="12.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CompleteUninstaller.Infrastructure.Linux\CompleteUninstaller.Infrastructure.Linux.csproj" />
+  </ItemGroup>
+
+</Project>

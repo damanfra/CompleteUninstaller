@@ -1,0 +1,17 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="CompleteUninstaller.App.Avalonia.Views.MessageDialog"
+        Title="Complete Uninstaller"
+        Width="560" SizeToContent="Height" MinHeight="160" MaxHeight="620"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+    <Grid Margin="24,20,24,18" RowDefinitions="*,Auto">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="440">
+            <TextBlock x:Name="MessageText" TextWrapping="Wrap" />
+        </ScrollViewer>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,18,0,0">
+            <Button x:Name="NoButton" Content="Não" Click="No_Click" />
+            <Button x:Name="YesButton" Content="Sim" Classes="accent" Click="Yes_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

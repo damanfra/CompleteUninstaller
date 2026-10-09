@@ -1,0 +1,59 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="CompleteUninstaller.App.Avalonia.App"
+             RequestedThemeVariant="Default">
+
+    <Application.Styles>
+        <FluentTheme />
+        <!-- A DataGrid é um pacote à parte e traz o próprio tema; sem esta linha ela aparece vazia. -->
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+
+        <Style Selector="TextBlock.PageTitle">
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="TextBlock.SectionTitle">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+        <Style Selector="TextBlock.Muted">
+            <Setter Property="Opacity" Value="0.68" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style Selector="TextBlock.FieldLabel">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Opacity" Value="0.68" />
+            <Setter Property="Margin" Value="0,12,0,2" />
+        </Style>
+        <Style Selector="TextBox.FieldValue">
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <!-- Cores com transparência funcionam no tema claro e no escuro. -->
+        <Style Selector="Border.Card">
+            <Setter Property="Background" Value="#14808080" />
+            <Setter Property="BorderBrush" Value="#33808080" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="16" />
+        </Style>
+        <Style Selector="Border.Badge">
+            <Setter Property="Background" Value="#9A6700" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="8,2" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Border.Badge.High">
+            <Setter Property="Background" Value="#1A7F37" />
+        </Style>
+        <Style Selector="Button">
+            <Setter Property="Padding" Value="14,6" />
+        </Style>
+    </Application.Styles>
+</Application>
