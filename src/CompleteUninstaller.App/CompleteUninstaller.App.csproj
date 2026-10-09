@@ -8,7 +8,14 @@
     <AssemblyName>CompleteUninstaller</AssemblyName>
     <!-- Exige execução como administrador (necessário para HKLM, serviços, tarefas e Arquivos de Programas). -->
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Ícone do .exe; gerado por assets/make-icon.ps1. -->
+    <ApplicationIcon>..\..\assets\icon.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- O mesmo ícone como recurso, para as janelas (Icon="/app.ico"). -->
+    <Resource Include="..\..\assets\icon.ico" Link="app.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CompleteUninstaller.Infrastructure\CompleteUninstaller.Infrastructure.csproj" />

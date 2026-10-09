@@ -61,6 +61,12 @@ filosofia (nada é apagado direto; quarentena restaurável). O app do Windows (W
    `/var/lib/CompleteUninstaller/Quarantine` (sistema, só o auxiliar acessa; o manifesto do usuário a referencia).
 8. Nomes de pacote são validados por regex e executados com `ArgumentList` (sem shell), sempre com `LC_ALL=C`.
 
+### Ícone
+
+`assets/make-icon.ps1` (PowerShell + System.Drawing) gera `assets/icon.ico` (16 a 256 px: ícone do `.exe` e das janelas WPF)
+e `assets/icon.png` (janelas do Avalonia). Para mudar o desenho, edite o script e rode-o; os dois arquivos são versionados.
+A versão (`vX.Y.Z`) aparece no título da janela e na barra de status.
+
 ### Auto-atualização (Windows e Linux)
 
 - Projeto `CompleteUninstaller.Updater` (`net10.0`, só BCL) + lógica pura em `Core/Updates` (`AppVersion`, `UpdatePlanner`).

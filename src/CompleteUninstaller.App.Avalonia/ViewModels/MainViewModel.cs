@@ -5,6 +5,7 @@ using Avalonia.Threading;
 using CompleteUninstaller.App.Avalonia.Mvvm;
 using CompleteUninstaller.App.Avalonia.Services;
 using CompleteUninstaller.Core.Models;
+using CompleteUninstaller.Updater;
 using CompleteUninstaller.Infrastructure.Linux;
 using CompleteUninstaller.Infrastructure.Linux.Inventory;
 using CompleteUninstaller.Infrastructure.Linux.Logging;
@@ -173,6 +174,9 @@ public sealed class MainViewModel : ObservableObject
     public bool HasSelection => SelectedApp is not null;
 
     public bool HasNoSelection => SelectedApp is null;
+
+    /// <summary>Versão do executável (carimbada pela Action a partir da tag), mostrada na barra de status.</summary>
+    public string VersionText => $"v{UpdateService.CurrentVersion()}";
 
     public void SetStatus(string text) => StatusText = text;
 

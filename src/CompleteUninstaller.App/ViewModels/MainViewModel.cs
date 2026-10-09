@@ -8,6 +8,7 @@ using System.Windows.Input;
 using CompleteUninstaller.App.Mvvm;
 using CompleteUninstaller.App.Services;
 using CompleteUninstaller.Core.Models;
+using CompleteUninstaller.Updater;
 using CompleteUninstaller.Infrastructure.Inventory;
 
 namespace CompleteUninstaller.App.ViewModels;
@@ -167,6 +168,9 @@ public sealed class MainViewModel : ObservableObject
     public bool HasSelection => SelectedApp is not null;
 
     public bool HasNoSelection => SelectedApp is null;
+
+    /// <summary>Versão do executável (carimbada pela Action a partir da tag), mostrada na barra de status.</summary>
+    public string VersionText => $"v{UpdateService.CurrentVersion()}";
 
     public void SetStatus(string text) => StatusText = text;
 

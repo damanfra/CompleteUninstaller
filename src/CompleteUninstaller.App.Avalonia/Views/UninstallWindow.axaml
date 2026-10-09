@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Icon="/Assets/icon.png"
         x:Class="CompleteUninstaller.App.Avalonia.Views.UninstallWindow"
         Title="{Binding Title}"
         Width="1080" Height="700" MinWidth="760" MinHeight="480"

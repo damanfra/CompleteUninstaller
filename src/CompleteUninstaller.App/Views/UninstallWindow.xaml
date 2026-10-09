@@ -1,6 +1,7 @@
 <Window x:Class="CompleteUninstaller.App.Views.UninstallWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Icon="/app.ico"
         Title="{Binding Title}"
         Width="1080" Height="700" MinWidth="760" MinHeight="480"
         WindowStartupLocation="CenterOwner"
