@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Adaptadores do Linux: apt/dpkg, dnf/rpm, Flatpak, Snap, systemd, pkexec. Compila em qualquer SO (só executa no Linux). -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>CompleteUninstaller.Infrastructure.Linux</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CompleteUninstaller.Core\CompleteUninstaller.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="CompleteUninstaller.Core.Tests" />
+  </ItemGroup>
+
+</Project>

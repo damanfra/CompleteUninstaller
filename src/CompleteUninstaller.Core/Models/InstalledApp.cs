@@ -82,7 +82,7 @@ public sealed class InstalledApp
 {
     public required string Id { get; init; }
 
-    public required string DisplayName { get; init; }
+    public required string DisplayName { get; set; }
 
     public required AppSource Source { get; init; }
 

@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\CompleteUninstaller.Core\CompleteUninstaller.Core.csproj" />
+    <ProjectReference Include="..\..\src\CompleteUninstaller.Infrastructure.Linux\CompleteUninstaller.Infrastructure.Linux.csproj" />
   </ItemGroup>
 
 </Project>
