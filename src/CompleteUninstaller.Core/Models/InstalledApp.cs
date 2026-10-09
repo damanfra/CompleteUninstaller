@@ -129,6 +129,9 @@ public sealed class InstalledApp
     /// <summary>Linux: arquitetura do pacote (amd64, x86_64...).</summary>
     public string? PackageArch { get; init; }
 
+    /// <summary>Linux: ramo do Flatpak (stable, 23.08...).</summary>
+    public string? PackageBranch { get; init; }
+
     /// <summary>Linux: Flatpak "user" ou "system".</summary>
     public string? PackageScope { get; init; }
 
