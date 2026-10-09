@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Adaptadores para o Windows: Registro, Windows Installer, pacotes da Store, SCM, Agendador de Tarefas. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <RootNamespace>CompleteUninstaller.Infrastructure</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CompleteUninstaller.Core\CompleteUninstaller.Core.csproj" />
+  </ItemGroup>
+
+</Project>

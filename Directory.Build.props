@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Version>0.1.0</Version>
+    <Company>CompleteUninstaller</Company>
+    <Product>Complete Uninstaller</Product>
+    <NeutralLanguage>pt-BR</NeutralLanguage>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Domínio puro: sem nenhuma API do Windows, para poder ser testado em qualquer plataforma. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>CompleteUninstaller.Core</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="CompleteUninstaller.Core.Tests" />
+  </ItemGroup>
+
+</Project>

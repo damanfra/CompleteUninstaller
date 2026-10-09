@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>CompleteUninstaller.App</RootNamespace>
+    <AssemblyName>CompleteUninstaller</AssemblyName>
+    <!-- Exige execução como administrador (necessário para HKLM, serviços, tarefas e Arquivos de Programas). -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CompleteUninstaller.Infrastructure\CompleteUninstaller.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
