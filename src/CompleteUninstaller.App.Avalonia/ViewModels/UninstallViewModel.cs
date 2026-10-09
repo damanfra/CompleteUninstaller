@@ -221,13 +221,19 @@ public sealed class UninstallViewModel : ObservableObject
         WorkingText = "Conferindo se o programa foi removido...";
         var loaded = await _services.Inventory.LoadAsync();
         _inventory = loaded.Apps;
+        foreach (var error in loaded.Errors)
+        {
+            AddLog($"Aviso: {error}");
+        }
+
         var stillInstalled = await Task.Run(() => _services.Inventory.IsStillInstalled(App));
         if (stillInstalled)
         {
             AddLog("O programa ainda aparece como instalado.");
             var proceed = await Ask(
                 "O programa ainda aparece como instalado (a remoção pode ter falhado).\n\n" +
-                "Procurar sobras mesmo assim? Tudo o que o pacote instalado possui continua protegido, então a lista deve ficar quase vazia.");
+                "Procurar sobras mesmo assim? Os arquivos do pacote continuam protegidos, mas configuração, cache e dados do " +
+                "programa (~/.config, ~/.cache, ~/.var/app, ~/snap) podem aparecer na lista. Todos os itens virão desmarcados.");
             if (!proceed)
             {
                 Finish("Programa ainda instalado", "Nenhuma sobra foi removida.");
@@ -243,6 +249,11 @@ public sealed class UninstallViewModel : ObservableObject
         foreach (var item in items)
         {
             var row = new LeftoverItemViewModel(item);
+            if (stillInstalled)
+            {
+                row.IsSelected = false; // o programa ainda existe: nada vem marcado
+            }
+
             row.PropertyChanged += OnLeftoverChanged;
             Leftovers.Add(row);
         }

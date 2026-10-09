@@ -96,7 +96,11 @@ public static class PrivilegedHelper
 
     private static HelperResponse Move(HelperRequest request, string sessionDir)
     {
-        var guard = CreateGuard();
+        if (!TryCreateGuard(out var guard, out var guardError))
+        {
+            return Fail(guardError);
+        }
+
         var response = new HelperResponse { Ok = true };
         var reloadSystemd = false;
 
@@ -162,7 +166,11 @@ public static class PrivilegedHelper
 
     private static HelperResponse Restore(HelperRequest request, string sessionDir)
     {
-        var guard = CreateGuard();
+        if (!TryCreateGuard(out var guard, out var guardError))
+        {
+            return Fail(guardError);
+        }
+
         var response = new HelperResponse { Ok = true };
         var reloadSystemd = false;
 
@@ -245,6 +253,16 @@ public static class PrivilegedHelper
             return false;
         }
 
+        // Se uma pasta-pai for um link simbólico, o mv (como root) seguiria o link para outro lugar.
+        for (var parent = UnixPath.GetParent(path); parent is not null && parent != "/"; parent = UnixPath.GetParent(parent))
+        {
+            if (FileSystemHelper.IsLink(parent))
+            {
+                error = $"Uma pasta do caminho é um link simbólico ({parent}).";
+                return false;
+            }
+        }
+
         if (kind == LeftoverKind.Service
             && (!UnixPath.AreEqual(UnixPath.GetParent(path) ?? string.Empty, "/etc/systemd/system")
                 || !HelperProtocol.IsValidUnitName(UnixPath.GetLeaf(path))))
@@ -259,12 +277,23 @@ public static class PrivilegedHelper
     }
 
     /// <summary>A proteção do auxiliar: só áreas do sistema, nada da pasta pessoal, nada de pacote instalado.</summary>
-    private static PathGuard CreateGuard()
+    private static bool TryCreateGuard(out PathGuard guard, out string error)
     {
-        var ownership = new PackageOwnership(InstalledPackageNames());
+        var names = InstalledPackageNames();
+        var ownership = new PackageOwnership(names);
+
+        // Sem a lista de pacotes instalados não dá para provar posse: recusa em vez de seguir sem proteção.
+        if (ownership.CanQuery && names.Count == 0)
+        {
+            guard = null!;
+            error = "Não foi possível ler a lista de pacotes instalados; nada foi alterado.";
+            return false;
+        }
 
         // Sem perfis: nenhuma pasta pessoal é conhecida, e /home e /root ficam fora das áreas permitidas.
-        return UnixSafetyRules.CreateGuard([], [AppPaths.SystemDataRoot], [], ownership.OwnerOf);
+        guard = UnixSafetyRules.CreateGuard([], [AppPaths.SystemDataRoot], [], ownership.OwnerOf);
+        error = string.Empty;
+        return true;
     }
 
     private static List<string> InstalledPackageNames()

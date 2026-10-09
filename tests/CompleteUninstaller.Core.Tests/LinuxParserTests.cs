@@ -378,3 +378,76 @@ public class LinuxUninstallCommandTests
         Assert.Null(plan.Remove);
     }
 }
+
+public class OwnershipDecisionTests
+{
+    private static readonly HashSet<string> Installed = ["libc6", "firefox"];
+
+    [Fact]
+    public void Dpkg_exit_1_means_nobody_owns_the_path() =>
+        Assert.Null(OwnershipDecision.Dpkg(1, "dpkg-query: no path found matching pattern /opt/x", Installed));
+
+    [Theory]
+    [InlineData(2)]    // erro do banco de dados do dpkg
+    [InlineData(-1)]   // tempo esgotado ou falha ao iniciar
+    [InlineData(127)]
+    public void Dpkg_errors_never_release_a_path(int exitCode) =>
+        Assert.Equal(OwnershipDecision.Unverified, OwnershipDecision.Dpkg(exitCode, string.Empty, Installed));
+
+    [Fact]
+    public void Dpkg_owner_must_be_installed_to_protect()
+    {
+        // "oldtool" está em estado rc (removido): ainda aparece no dpkg -S, mas não protege nada.
+        Assert.Null(OwnershipDecision.Dpkg(0, "oldtool: /etc/oldtool.conf", Installed));
+        Assert.Equal("firefox", OwnershipDecision.Dpkg(0, "oldtool, firefox: /usr/share/shared", Installed));
+    }
+
+    [Theory]
+    [MemberData(nameof(UnknownInstalledSets))]
+    public void Unknown_installed_set_makes_any_owner_protect(ISet<string>? installed) =>
+        Assert.Equal("oldtool", OwnershipDecision.Dpkg(0, "oldtool: /etc/oldtool.conf", installed));
+
+    public static IEnumerable<object?[]> UnknownInstalledSets() =>
+    [
+        [null],
+        [new HashSet<string>()],
+    ];
+
+    [Fact]
+    public void Dpkg_success_with_unreadable_output_is_unverified() =>
+        Assert.Equal(OwnershipDecision.Unverified, OwnershipDecision.Dpkg(0, "saída estranha", Installed));
+
+    [Fact]
+    public void Rpm_decisions()
+    {
+        Assert.Equal("bash", OwnershipDecision.Rpm(0, "bash\n"));
+        Assert.Null(OwnershipDecision.Rpm(1, "file /opt/x is not owned by any package\n"));
+        Assert.Equal(OwnershipDecision.Unverified, OwnershipDecision.Rpm(1, "error: cannot open Packages database in /var/lib/rpm"));
+        Assert.Equal(OwnershipDecision.Unverified, OwnershipDecision.Rpm(-1, string.Empty));
+        Assert.Equal(OwnershipDecision.Unverified, OwnershipDecision.Rpm(0, string.Empty));
+    }
+}
+
+public class SimulationResultTests
+{
+    private static InstalledApp App(AppSource source, string name) =>
+        new() { Id = "x", DisplayName = name, Source = source, PackageName = name };
+
+    [Fact]
+    public void Dnf_assumeno_fails_with_exit_code_but_the_simulation_worked()
+    {
+        const string output = "Removing:\n firefox      x86_64   120.0-1.fc39   @updates   250 M\n\nTransaction Summary\nOperation aborted.\n";
+
+        Assert.True(LinuxUninstallCommands.SimulationSucceeded(App(AppSource.Rpm, "firefox"), 1, output));
+    }
+
+    [Fact]
+    public void Dnf_without_the_target_in_the_output_is_a_failure() =>
+        Assert.False(LinuxUninstallCommands.SimulationSucceeded(App(AppSource.Rpm, "firefox"), 1, "Error: This command has to be run with superuser privileges."));
+
+    [Theory]
+    [InlineData(0, true)]
+    [InlineData(100, false)]
+    public void Apt_uses_the_exit_code(int exitCode, bool expected) =>
+        Assert.Equal(expected, LinuxUninstallCommands.SimulationSucceeded(App(AppSource.Dpkg, "firefox"), exitCode, "Remv firefox [1]"));
+}

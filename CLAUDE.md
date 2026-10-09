@@ -17,7 +17,7 @@ Projeto pessoal do Daniel. Pasta: `C:\Users\daniel.msouza\Projetos\CompleteUnins
 
 - **Fase 1 implementada:** níveis **Seguro** e **Moderado**.
 - **Fase 2 (não implementada):** limpeza de **Registro** e nível **Avançado**. Veja "Roteiro" no `README.md`.
-- ✅ **Build OK e testes passando** (07/10/2026, Visual Studio 2026; hoje são 269 com a branch `linux`). Só foi preciso corrigir a falta de
+- ✅ **Build OK e testes passando** (07/10/2026, Visual Studio 2026; hoje são 282 com a branch `linux`). Só foi preciso corrigir a falta de
   `using System.IO;` no projeto WPF.
 - 07/10: adicionados ícones na lista e filtros "Ocultar itens do Windows" (ligado por padrão) e
   "Ocultar apps da Microsoft". Aguardando build/teste do Daniel.
@@ -62,7 +62,7 @@ filosofia (nada é apagado direto; quarentena restaurável). O app do Windows (W
 8. Nomes de pacote são validados por regex e executados com `ArgumentList` (sem shell), sempre com `LC_ALL=C`.
 
 Limitações conhecidas: só o usuário atual é varrido (não os outros `/home/*`); sem cron; `~/.mozilla`-style
-(pasta com nome diferente do pacote) não é achada; ícones só PNG; `dnf remove --assumeno` pede senha.
+(pasta com nome diferente do pacote) não é achada; ícones só PNG; `dnf remove --assumeno` pede senha (o dnf pede duas vezes: simulação e remoção); o auxiliar sob `pkexec` precisa achar o .NET (repassamos `DOTNET_ROOT`; para testar, publique self-contained).
 
 ## Stack e decisões
 

@@ -25,7 +25,14 @@ public sealed class HelperClient
         }
 
         // Executando com "dotnet app.dll": o auxiliar precisa do mesmo comando.
-        var arguments = new List<string> { processPath };
+        // O pkexec limpa o ambiente: sem DOTNET_ROOT, um .NET instalado na pasta do usuário não seria achado pelo root.
+        var arguments = new List<string>();
+        if (Environment.GetEnvironmentVariable("DOTNET_ROOT") is { Length: > 0 } dotnetRoot)
+        {
+            arguments.AddRange(["env", $"DOTNET_ROOT={dotnetRoot}"]);
+        }
+
+        arguments.Add(processPath);
         if (Path.GetFileNameWithoutExtension(processPath).Equals("dotnet", StringComparison.Ordinal))
         {
             arguments.Add(Environment.GetCommandLineArgs()[0]);

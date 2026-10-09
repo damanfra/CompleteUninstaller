@@ -75,6 +75,21 @@ public static partial class LinuxUninstallCommands
         }
     }
 
+    /// <summary>
+    /// A simulação deu certo? O apt devolve 0. O dnf com --assumeno devolve erro ("Operation aborted") mesmo quando
+    /// a simulação funcionou, então vale a saída: ela precisa listar o próprio pacote entre os que seriam removidos.
+    /// </summary>
+    public static bool SimulationSucceeded(InstalledApp app, int exitCode, string output)
+    {
+        if (app.Source != AppSource.Rpm)
+        {
+            return exitCode == 0;
+        }
+
+        var target = app.PackageName ?? string.Empty;
+        return ToolOutputParsers.ParseDnfSimulation(output).Any(n => string.Equals(n, target, StringComparison.Ordinal));
+    }
+
     /// <summary>Pacotes que seriam removidos junto com o alvo (dependentes), sem contar o próprio alvo.</summary>
     public static List<string> OtherPackagesInSimulation(InstalledApp app, string simulationOutput)
     {

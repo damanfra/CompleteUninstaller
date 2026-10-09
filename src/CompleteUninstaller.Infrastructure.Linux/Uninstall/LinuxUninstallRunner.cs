@@ -49,7 +49,7 @@ public sealed class LinuxUninstallRunner
             return new UninstallPreview("A autenticação foi cancelada.", []);
         }
 
-        if (!result.Success)
+        if (!LinuxUninstallCommands.SimulationSucceeded(app, result.ExitCode, result.Output))
         {
             var message = string.IsNullOrWhiteSpace(result.Error) ? result.Output : result.Error;
             return new UninstallPreview($"A simulação da remoção falhou: {message.Trim()}", []);
