@@ -3,6 +3,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using CompleteUninstaller.App.ViewModels;
 using CompleteUninstaller.Core.Models;
+using CompleteUninstaller.Infrastructure.Logging;
+using CompleteUninstaller.Updater;
 
 namespace CompleteUninstaller.App.Views;
 
@@ -10,6 +12,7 @@ public partial class MainWindow : Window
 {
     private readonly AppServices _services;
     private readonly MainViewModel _viewModel;
+    private readonly UpdateFlow _updates;
 
     public MainWindow(AppServices services)
     {
@@ -19,8 +22,27 @@ public partial class MainWindow : Window
         _viewModel.UninstallRequested += OnUninstallRequested;
         _viewModel.QuarantineRequested += OnQuarantineRequested;
         DataContext = _viewModel;
-        Loaded += async (_, _) => await _viewModel.RefreshAsync();
+        Title = $"Complete Uninstaller {UpdateService.CurrentVersion()}";
+        _updates = new UpdateFlow(
+            services.Updates,
+            message => Task.FromResult(MessageBox.Show(this, message, "Atualização", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes),
+            message =>
+            {
+                MessageBox.Show(this, message, "Atualização", MessageBoxButton.OK, MessageBoxImage.Information);
+                return Task.CompletedTask;
+            },
+            _viewModel.SetStatus,
+            Close,
+            Log.Info);
+        Loaded += async (_, _) =>
+        {
+            await _viewModel.RefreshAsync();
+            await _updates.RunAsync(userInitiated: false); // verificação silenciosa ao abrir
+        };
     }
+
+    private async void CheckUpdates_Click(object sender, RoutedEventArgs e) =>
+        await _updates.RunAsync(userInitiated: true);
 
     private async void OnUninstallRequested(InstalledApp app)
     {

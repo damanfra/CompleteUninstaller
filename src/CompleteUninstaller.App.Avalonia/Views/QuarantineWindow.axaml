@@ -1,0 +1,55 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Icon="/Assets/icon.png"
+        x:Class="CompleteUninstaller.App.Avalonia.Views.QuarantineWindow"
+        Title="Quarentena"
+        Width="1120" Height="640" MinWidth="760" MinHeight="420"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+    <Grid Margin="24,20,24,18" RowDefinitions="Auto,*,Auto">
+
+        <StackPanel>
+            <TextBlock Text="Quarentena" Classes="PageTitle" />
+            <TextBlock Classes="Muted" Margin="0,2,0,0"
+                       Text="Cada limpeza fica guardada aqui até você excluí-la. Restaurar devolve pastas, arquivos, atalhos e serviços aos lugares de origem (itens do sistema pedem sua senha)." />
+        </StackPanel>
+
+        <Grid Grid.Row="1" Margin="0,14,0,0" ColumnDefinitions="320,*">
+            <ListBox ItemsSource="{Binding Sessions}" SelectedItem="{Binding SelectedSession}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="2,4">
+                            <TextBlock Text="{Binding AppName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{Binding Summary}" FontSize="12" Opacity="0.68" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <DataGrid Grid.Column="1" Margin="12,0,0,0"
+                      ItemsSource="{Binding SelectedEntries}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      GridLinesVisibility="None"
+                      SelectionMode="Single">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Tipo" Binding="{Binding KindText}" Width="150" />
+                    <DataGridTextColumn Header="Item" Binding="{Binding Target}" Width="2*" />
+                    <DataGridTextColumn Header="Situação" Binding="{Binding StatusText}" Width="1.2*" />
+                    <DataGridTextColumn Header="Observação" Binding="{Binding Error}" Width="1.2*" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+
+        <DockPanel Grid.Row="2" Margin="0,14,0,0">
+            <Button DockPanel.Dock="Right" Content="Fechar" Click="Close_Click" Padding="20,6" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Restaurar" Command="{Binding RestoreCommand}" Classes="accent" Padding="18,6" />
+                <Button Content="Excluir definitivamente" Command="{Binding PurgeCommand}" />
+                <Button Content="Abrir pasta" Command="{Binding OpenFolderCommand}" />
+                <Button Content="Atualizar" Command="{Binding RefreshCommand}" />
+                <TextBlock Text="{Binding StatusText}" Classes="Muted" VerticalAlignment="Center" Margin="8,0,0,0" />
+            </StackPanel>
+        </DockPanel>
+    </Grid>
+</Window>

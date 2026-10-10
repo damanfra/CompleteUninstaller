@@ -1,0 +1,129 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Icon="/Assets/icon.png"
+        x:Class="CompleteUninstaller.App.Avalonia.Views.MainWindow"
+        Title="Complete Uninstaller"
+        Width="1320" Height="780" MinWidth="960" MinHeight="520"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="20,16,20,12" RowDefinitions="Auto,Auto,*,Auto">
+
+        <!-- Cabeçalho -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,14">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
+                <Button Content="Log" Command="{Binding OpenLogCommand}"
+                        ToolTip.Tip="Abre a pasta com o registro de tudo o que foi feito" />
+                <Button Content="Quarentena" Command="{Binding OpenQuarantineCommand}"
+                        ToolTip.Tip="Ver, restaurar ou excluir definitivamente itens removidos" />
+                <Button Content="Atualizar lista" Command="{Binding RefreshCommand}" />
+                <Button Content="Atualizações" Click="CheckUpdates_Click"
+                        ToolTip.Tip="Verifica se há uma versão nova do Complete Uninstaller no GitHub" />
+            </StackPanel>
+            <StackPanel>
+                <TextBlock Text="Programas instalados" Classes="PageTitle" />
+                <TextBlock Classes="Muted" Margin="0,2,0,0"
+                           Text="Pacotes do apt (.deb), dnf (.rpm), Flatpak e Snap. Bibliotecas e componentes do sistema ficam ocultos por padrão." />
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Busca e filtros -->
+        <DockPanel Grid.Row="1" Margin="0,0,0,10" LastChildFill="True">
+            <Button DockPanel.Dock="Right" Content="Desinstalar…" Command="{Binding UninstallCommand}"
+                    Classes="accent" Padding="20,6" FontWeight="SemiBold" />
+            <TextBox DockPanel.Dock="Left" Width="340" Text="{Binding SearchText}"
+                     PlaceholderText="Pesquisar por nome, pacote ou fabricante" VerticalContentAlignment="Center" />
+            <WrapPanel Orientation="Horizontal" Margin="20,0,0,0" VerticalAlignment="Center">
+                <ComboBox ItemsSource="{Binding Sources}" SelectedItem="{Binding SelectedSource}"
+                          MinWidth="170" Margin="0,2,20,2" />
+                <CheckBox Content="Bibliotecas e dependências" IsChecked="{Binding ShowLibraries}" Margin="0,2,20,2"
+                          ToolTip.Tip="Pacotes que não têm atalho no menu e foram instalados como dependência de outro" />
+                <CheckBox Content="Componentes do sistema" IsChecked="{Binding ShowSystemComponents}" Margin="0,2,0,2"
+                          ToolTip.Tip="Pacotes essenciais, de prioridade 'required' ou 'important', base do Snap e afins" />
+                <CheckBox Content="{Binding DistroFilterText}" IsChecked="{Binding HideDistroPackages}" Margin="20,2,0,2"
+                          ToolTip.Tip="Esconde o que tem como fabricante a própria distribuição (e a de que ela deriva), lida de /etc/os-release" />
+            </WrapPanel>
+        </DockPanel>
+
+        <!-- Lista + detalhes -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,380">
+
+            <DataGrid x:Name="AppsGrid"
+                      ItemsSource="{Binding Apps}"
+                      SelectedItem="{Binding SelectedApp}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      SelectionMode="Single"
+                      CanUserSortColumns="True"
+                      CanUserResizeColumns="True"
+                      GridLinesVisibility="None"
+                      DoubleTapped="AppsGrid_DoubleTapped">
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="" Width="40" CanUserSort="False" CanUserResize="False">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Image Source="{Binding Icon}" Width="20" Height="20" Stretch="Uniform" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Nome" Binding="{Binding Name}" Width="2.2*" />
+                    <DataGridTextColumn Header="Versão" Binding="{Binding Version}" Width="170" />
+                    <DataGridTextColumn Header="Fabricante" Binding="{Binding Publisher}" Width="1.2*" />
+                    <DataGridTextColumn Header="Tamanho" Binding="{Binding Size}" Width="100" />
+                    <DataGridTextColumn Header="Origem" Binding="{Binding Source}" Width="170" />
+                    <DataGridTextColumn Header="Observações" Binding="{Binding Tags}" Width="*" />
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <Border Grid.Column="1" Margin="12,0,0,0" Classes="Card">
+                <Grid>
+                    <TextBlock Text="Selecione um programa para ver os detalhes."
+                               Classes="Muted" VerticalAlignment="Center" HorizontalAlignment="Center"
+                               TextAlignment="Center"
+                               IsVisible="{Binding HasNoSelection}" />
+
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" IsVisible="{Binding HasSelection}">
+                        <StackPanel DataContext="{Binding SelectedApp}">
+                            <DockPanel>
+                                <Image DockPanel.Dock="Left" Source="{Binding Icon}" Width="32" Height="32"
+                                       Margin="0,2,12,0" VerticalAlignment="Top" />
+                                <TextBlock Text="{Binding Name}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
+                            </DockPanel>
+                            <TextBlock Text="{Binding Publisher}" Classes="Muted" Margin="0,2,0,0" />
+                            <TextBlock Text="{Binding Tags}" Classes="Muted" FontSize="12" Margin="0,6,0,0" />
+
+                            <TextBlock Text="Versão" Classes="FieldLabel" />
+                            <TextBox Text="{Binding Version, Mode=OneWay}" Classes="FieldValue" />
+
+                            <TextBlock Text="Origem" Classes="FieldLabel" />
+                            <TextBox Text="{Binding Source, Mode=OneWay}" Classes="FieldValue" />
+
+                            <TextBlock Text="Pacote" Classes="FieldLabel" />
+                            <TextBox Text="{Binding PackageName, Mode=OneWay}" Classes="FieldValue" />
+
+                            <TextBlock Text="Pasta de instalação" Classes="FieldLabel" />
+                            <TextBox Text="{Binding InstallLocation, Mode=OneWay}" Classes="FieldValue" />
+
+                            <TextBlock Text="Atalho (.desktop)" Classes="FieldLabel" />
+                            <TextBox Text="{Binding DesktopFile, Mode=OneWay}" Classes="FieldValue" />
+
+                            <TextBlock Text="Comando de remoção" Classes="FieldLabel" />
+                            <TextBox Text="{Binding RemoveCommandText, Mode=OneWay}" Classes="FieldValue" />
+
+                            <Button Content="Abrir pasta de instalação" HorizontalAlignment="Left" Margin="0,16,0,0"
+                                    Click="OpenInstallLocation_Click" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Barra de status -->
+        <DockPanel Grid.Row="3" Margin="0,10,0,0">
+            <TextBlock DockPanel.Dock="Right" Text="{Binding VersionText}" Classes="Muted" FontSize="12"
+                       Margin="16,0,0,0" VerticalAlignment="Center" />
+            <ProgressBar DockPanel.Dock="Right" Width="160" Height="4" IsIndeterminate="True" VerticalAlignment="Center"
+                         IsVisible="{Binding IsBusy}" />
+            <TextBlock Text="{Binding StatusText}" Classes="Muted" TextTrimming="CharacterEllipsis"
+                       TextWrapping="NoWrap" FontSize="12" VerticalAlignment="Center" />
+        </DockPanel>
+    </Grid>
+</Window>

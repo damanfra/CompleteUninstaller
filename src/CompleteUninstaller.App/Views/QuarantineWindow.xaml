@@ -1,6 +1,7 @@
 <Window x:Class="CompleteUninstaller.App.Views.QuarantineWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Icon="/app.ico"
         Title="Quarentena"
         Width="1120" Height="640" MinWidth="760" MinHeight="420"
         WindowStartupLocation="CenterOwner"

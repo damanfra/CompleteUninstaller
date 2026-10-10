@@ -17,7 +17,7 @@ Projeto pessoal do Daniel. Pasta: `C:\Users\daniel.msouza\Projetos\CompleteUnins
 
 - **Fase 1 implementada:** níveis **Seguro** e **Moderado**.
 - **Fase 2 (não implementada):** limpeza de **Registro** e nível **Avançado**. Veja "Roteiro" no `README.md`.
-- ✅ **Build OK e 67 testes passando** (07/10/2026, Visual Studio 2026). Só foi preciso corrigir a falta de
+- ✅ **Build OK e testes passando** (07/10/2026, Visual Studio 2026; hoje são 358 com a branch `linux`). Só foi preciso corrigir a falta de
   `using System.IO;` no projeto WPF.
 - 07/10: adicionados ícones na lista e filtros "Ocultar itens do Windows" (ligado por padrão) e
   "Ocultar apps da Microsoft". Aguardando build/teste do Daniel.
@@ -28,6 +28,70 @@ Projeto pessoal do Daniel. Pasta: `C:\Users\daniel.msouza\Projetos\CompleteUnins
   Aguardando build do Daniel.
 - ⏳ **Ainda não testado em uso real**: abrir o app, listar, desinstalar, revisar sobras, quarentena e restauração.
   Ao retomar, pergunte como foram esses testes e peça o log (`%ProgramData%\CompleteUninstaller\Logs`) se algo falhou.
+
+## Versão Linux (branch `linux`)
+
+Segunda frente do projeto: o mesmo desinstalador para Linux (apt/dpkg, dnf/rpm, Flatpak e Snap), com a mesma
+filosofia (nada é apagado direto; quarentena restaurável). O app do Windows (WPF) **não foi alterado**.
+
+- **Projetos novos:** `CompleteUninstaller.Infrastructure.Linux` (`net10.0`, compila em qualquer SO, só executa no
+  Linux) e `CompleteUninstaller.App.Avalonia` (GUI). `CompleteUninstaller.Linux.slnf` é o filtro de solution
+  só com o que o Linux usa (o WPF não compila lá).
+- **Exceção à regra "sem NuGet de terceiros":** a GUI do Linux usa **Avalonia 12.1.x** (+ `Avalonia.Controls.DataGrid`).
+  Escolha do Daniel. O Core e a Infrastructure continuam sem pacotes.
+- **Core compartilhado:** `PathGuard` e `LeftoverCollector` aceitam `IPathRules` (padrão: Windows, comportamento
+  idêntico). `UnixPath`/`UnixPathRules` são texto puro, diferenciam maiúsculas e **rejeitam `..`**.
+  `Core/Linux/*` tem os parsers (dpkg, rpm, Flatpak, Snap, apt/dnf simulado, `.desktop`) e `LinuxUninstallCommands`.
+  Tudo testável no Windows com amostras de saída.
+- **Sem WSL/Linux na máquina do Daniel até agora:** os adaptadores que executam comandos (`CommandRunner`,
+  inventário, remoção, auxiliar) **nunca foram executados em Linux de verdade**. Só compilam e os parsers/validações
+  têm testes. Ao retomar, peça para testar numa VM/WSL e colar o log (`~/.local/share/CompleteUninstaller/Logs`).
+
+### Regras de segurança específicas do Linux (além das abaixo)
+
+1. A GUI **não roda como root**. Operações com privilégio: `pkexec apt-get/dnf/snap ...` para o pacote e
+   `pkexec <app> --helper` (`PrivilegedHelper`) para mover itens do sistema. O auxiliar **não confia no pedido**:
+   valida de novo caminho, tipo, ids e posse por pacote instalado, e só aceita `move`, `restore` e `purge`.
+2. **`UnixSafetyRules`**: lista de áreas permitidas (pasta pessoal e `/opt /etc /srv /usr/share /usr/lib /usr/local
+   /var/lib /var/cache /var/log /var/snap`); o resto é vetado. Na pasta pessoal só valem pastas ocultas e `~/snap`
+   (nunca Documentos, Projetos...). Árvores como `/usr/bin`, `/var/lib/dpkg`, `/etc/ssh`, `~/.ssh` são intocáveis.
+3. **Posse por pacote:** caminho que um pacote **ainda instalado** possui (`dpkg -S` / `rpm -qf`) nunca vira sobra.
+   Pacote em estado `rc` (removido com configuração) **não** protege. Caminhos com `* ? [ \` ficam protegidos.
+4. `dpkg -L`/`rpm -ql` (lidos **antes** de remover) só indicam candidatos; incluem pastas-pai compartilhadas.
+5. Remoção: `apt-get remove` (nunca purge), `flatpak uninstall` sem `--delete-data`, `snap remove` sem `--purge`.
+   apt/dnf são **simulados antes** e os dependentes que também seriam removidos exigem confirmação.
+   Pacotes essenciais (`Essential`, prioridade required/important) não podem ser removidos.
+6. Links simbólicos nunca viram sobra. Mover usa `mv --` (preserva dono e permissões entre dispositivos).
+7. Duas quarentenas: `~/.local/share/CompleteUninstaller/Quarantine` (pasta pessoal) e
+   `/var/lib/CompleteUninstaller/Quarantine` (sistema, só o auxiliar acessa; o manifesto do usuário a referencia).
+8. Nomes de pacote são validados por regex e executados com `ArgumentList` (sem shell), sempre com `LC_ALL=C`.
+
+### Ícone
+
+`assets/make-icon.ps1` (PowerShell + System.Drawing) gera `assets/icon.ico` (16 a 256 px: ícone do `.exe` e das janelas WPF)
+e `assets/icon.png` (janelas do Avalonia). Para mudar o desenho, edite o script e rode-o; os dois arquivos são versionados.
+A versão (`vX.Y.Z`) aparece no título da janela e na barra de status.
+
+### Auto-atualização (Windows e Linux)
+
+- Projeto `CompleteUninstaller.Updater` (`net10.0`, só BCL) + lógica pura em `Core/Updates` (`AppVersion`, `UpdatePlanner`).
+  `UpdateFlow` é o fluxo compartilhado pelas duas UIs: verifica (silencioso ao abrir; botão "Atualizações" responde
+  sempre), **pergunta**, baixa, confere, troca o executável e reinicia. Nunca atualiza sem confirmação.
+- Fonte: `GET api.github.com/repos/damanfra/CompleteUninstaller/releases/latest` (o repositório precisa ser **público**).
+  Ignora rascunhos e pré-lançamentos. Pacotes: `CompleteUninstaller-win-x64.zip` (`CompleteUninstaller.exe`) e
+  `CompleteUninstaller-linux-x64.tar.gz` (`complete-uninstaller`).
+- **Integridade:** só instala se o SHA-256 do pacote conferir com o `SHA256SUMS.txt` da mesma release (gerado pela Action);
+  sem esse arquivo a atualização é recusada. Links só de HTTPS `github.com/{repo}/releases/download/`. Limite de 500 MB.
+  Isso protege de arquivo corrompido ou de link trocado, **não** de uma release publicada por quem controla o repositório
+  (não há assinatura de código).
+- Troca do arquivo: Windows renomeia o `.exe` em uso para `.old` e o apaga na próxima abertura; Linux troca por
+  renomeação atômica e restaura `chmod`. Não funciona via `dotnet app.dll` nem em pasta sem permissão de escrita (avisa).
+- **Versão** vem da tag: a Action usa `-p:Version=1.2.3` (tag `v1.2.3`); sem tag é `0.0.0-dev`. Build local = `0.1.0`
+  (`Directory.Build.props`). Para lançar: `git tag v0.2.0 && git push origin v0.2.0`.
+- Nada do fluxo de rede/troca foi testado com uma release real ainda: só com servidor simulado nos testes.
+
+Limitações conhecidas: só o usuário atual é varrido (não os outros `/home/*`); sem cron; `~/.mozilla`-style
+(pasta com nome diferente do pacote) não é achada; ícones só PNG; `dnf remove --assumeno` pede senha (o dnf pede duas vezes: simulação e remoção); o auxiliar sob `pkexec` precisa achar o .NET (repassamos `DOTNET_ROOT`; para testar, publique self-contained).
 
 ## Stack e decisões
 
@@ -126,6 +190,15 @@ dotnet publish src\CompleteUninstaller.App -c Release -r win-x64 --self-containe
 - O Daniel usa o **Visual Studio 2026**. Se um arquivo editado pelo Claude estiver aberto no VS, o VS pode
   salvar por cima a versão antiga. Depois de gravar uma correção, confira o arquivo na máquina dele
   e lembre-o de recarregar os arquivos ("Recarregar tudo") antes de compilar.
+
+## Comandos do Linux
+
+```bash
+dotnet build CompleteUninstaller.Linux.slnf
+dotnet test tests/CompleteUninstaller.Core.Tests
+dotnet run --project src/CompleteUninstaller.App.Avalonia
+dotnet publish src/CompleteUninstaller.App.Avalonia -c Release -r linux-x64 --self-contained false -p:PublishSingleFile=true
+```
 
 ## Roteiro — fase 2
 

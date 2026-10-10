@@ -1,6 +1,7 @@
 <Window x:Class="CompleteUninstaller.App.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Icon="/app.ico"
         Title="Complete Uninstaller"
         Width="1320" Height="780" MinWidth="960" MinHeight="520"
         WindowStartupLocation="CenterScreen">
@@ -19,7 +20,9 @@
                         ToolTip="Abre a pasta com o registro de tudo o que foi feito" />
                 <Button Content="Quarentena" Command="{Binding OpenQuarantineCommand}" Padding="14,6" Margin="0,0,8,0"
                         ToolTip="Ver, restaurar ou excluir definitivamente itens removidos" />
-                <Button Content="Atualizar lista" Command="{Binding RefreshCommand}" Padding="14,6" />
+                <Button Content="Atualizar lista" Command="{Binding RefreshCommand}" Padding="14,6" Margin="0,0,8,0" />
+                <Button Content="Atualizações" Click="CheckUpdates_Click" Padding="14,6"
+                        ToolTip="Verifica se há uma versão nova do Complete Uninstaller no GitHub" />
             </StackPanel>
             <StackPanel>
                 <TextBlock Text="Programas instalados" Style="{StaticResource PageTitle}" />
@@ -150,6 +153,8 @@
 
         <!-- Barra de status -->
         <DockPanel Grid.Row="3" Margin="0,10,0,0">
+            <TextBlock DockPanel.Dock="Right" Text="{Binding VersionText}" Style="{StaticResource Muted}" FontSize="12"
+                       Margin="16,0,0,0" VerticalAlignment="Center" />
             <ProgressBar DockPanel.Dock="Right" Width="160" Height="4" IsIndeterminate="True" VerticalAlignment="Center"
                          Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
             <TextBlock Text="{Binding StatusText}" Style="{StaticResource Muted}" TextTrimming="CharacterEllipsis"

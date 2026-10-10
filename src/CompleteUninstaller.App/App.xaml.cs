@@ -21,6 +21,7 @@ public partial class App : Application
         AsyncRelayCommand.UnhandledException += ShowError;
 
         Log.Info("Complete Uninstaller iniciado.");
+        Updater.UpdateService.CleanupOldVersion(); // apaga o executável antigo deixado por uma atualização
         if (!IsAdministrator())
         {
             MessageBox.Show(

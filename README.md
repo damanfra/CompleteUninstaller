@@ -30,6 +30,37 @@ Para gerar um executável único:
 dotnet publish src\CompleteUninstaller.App -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true
 ```
 
+## Versão para Linux
+
+Na branch `linux`: o mesmo desinstalador para **Linux x64** (apt/dpkg, dnf/rpm, Flatpak e Snap), com interface
+gráfica em [Avalonia](https://avaloniaui.net). Lista os pacotes (escondendo bibliotecas e componentes do
+sistema por padrão), mostra o que mais seria removido junto, remove o pacote e procura sobras
+(`~/.config`, `~/.local/share`, `~/.cache`, `~/.var/app`, `~/snap`, `/opt`, `/etc`, atalhos `.desktop`,
+serviços do systemd), sempre com **quarentena e restauração**.
+
+```bash
+dotnet build CompleteUninstaller.Linux.slnf
+dotnet run --project src/CompleteUninstaller.App.Avalonia      # abra como usuário comum
+dotnet publish src/CompleteUninstaller.App.Avalonia -c Release -r linux-x64 --self-contained false -p:PublishSingleFile=true
+```
+
+- Rode como **usuário comum**: o aplicativo pede a senha (polkit/`pkexec`) só para remover o pacote e para mover
+  itens fora da pasta pessoal. Requer um agente do polkit na sessão (o padrão nas áreas de trabalho comuns).
+- Nunca remove o que pertence a um pacote ainda instalado, nem pacotes essenciais; `apt` e `dnf` são simulados antes.
+- Nada de `purge`, `--delete-data` ou `snap --purge`: configuração e dados viram sobras que você revisa.
+- **Status:** os parsers e as regras de segurança têm testes, mas os adaptadores ainda **não foram executados em
+  um Linux real**. Teste primeiro numa VM ou no WSL2 com WSLg.
+
+## Atualizações automáticas
+
+O Complete Uninstaller (Windows e Linux) verifica as [Releases](https://github.com/damanfra/CompleteUninstaller/releases)
+ao abrir e pelo botão **Atualizações**. Se houver versão nova, mostra as novidades e **pergunta** antes de baixar,
+instalar e reiniciar. Só instala se o SHA-256 do arquivo conferir com o `SHA256SUMS.txt` da release.
+
+Para publicar uma versão: `git tag v0.2.0` e `git push origin v0.2.0`. A Action compila, carimba a versão
+no executável, gera os pacotes e o `SHA256SUMS.txt` e cria a release. A atualização automática exige que o
+executável esteja numa pasta com permissão de escrita (ela avisa quando não estiver).
+
 ## Arquitetura
 
 ```

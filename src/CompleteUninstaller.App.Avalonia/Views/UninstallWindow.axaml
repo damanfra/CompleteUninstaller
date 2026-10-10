@@ -1,0 +1,153 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Icon="/Assets/icon.png"
+        x:Class="CompleteUninstaller.App.Avalonia.Views.UninstallWindow"
+        Title="{Binding Title}"
+        Width="1080" Height="700" MinWidth="760" MinHeight="480"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+    <Grid Margin="24,20,24,18" RowDefinitions="Auto,*">
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="{Binding App.DisplayName}" Classes="PageTitle" />
+            <TextBlock Text="{Binding Subtitle}" Classes="Muted" Margin="0,2,0,0" />
+        </StackPanel>
+
+        <!-- ============ 1. Opções ============ -->
+        <Grid Grid.Row="1" RowDefinitions="*,Auto" IsVisible="{Binding IsOptionsStep}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel MaxWidth="760" HorizontalAlignment="Left">
+                    <TextBlock Text="Nível de limpeza" Classes="SectionTitle" />
+
+                    <RadioButton GroupName="Level" IsChecked="{Binding IsSafe}" Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="Seguro" FontWeight="SemiBold" />
+                            <TextBlock Classes="Muted"
+                                       Text="Remove o pacote e procura só sobras com ligação comprovada: arquivos que o pacote instalou e continuam no disco, pastas de configuração, dados e cache com o nome exato do programa, atalhos quebrados e serviços do systemd que executam arquivos dele." />
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton GroupName="Level" IsChecked="{Binding IsModerate}" Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="Moderado" FontWeight="SemiBold" />
+                            <TextBlock Classes="Muted"
+                                       Text="Tudo do nível Seguro, mais itens encontrados por semelhança de nome (pastas de dados, atalhos e serviços). Esses itens extras vêm desmarcados para você revisar um a um." />
+                        </StackPanel>
+                    </RadioButton>
+
+                    <TextBlock Text="Opções" Classes="SectionTitle" />
+                    <CheckBox IsChecked="{Binding SkipUninstaller}" Margin="0,0,0,16"
+                              Content="Não remover o pacote (ele já foi removido; só procurar sobras)" />
+
+                    <Border Classes="Card" Padding="14,12" Margin="0,0,0,12">
+                        <TextBlock Classes="Muted" Text="{Binding DataNote}" />
+                    </Border>
+                    <Border Classes="Card" Padding="14,12">
+                        <TextBlock Classes="Muted"
+                                   Text="Nada é apagado direto: pastas, arquivos, atalhos e unidades do systemd vão para a quarentena e podem ser restaurados depois pelo botão Quarentena. Itens fora da sua pasta pessoal (/opt, /etc, /var/lib...) são movidos com sua autorização (senha). O que pertence a um pacote ainda instalado nunca entra na lista." />
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,16,0,0">
+                <Button Content="Cancelar" Click="Close_Click" />
+                <Button Content="Iniciar" Command="{Binding StartCommand}" Classes="accent" Padding="24,6" />
+            </StackPanel>
+        </Grid>
+
+        <!-- ============ 2. Em andamento ============ -->
+        <Grid Grid.Row="1" RowDefinitions="Auto,*" IsVisible="{Binding IsWorkingStep}">
+            <StackPanel>
+                <TextBlock Text="{Binding WorkingText}" Classes="SectionTitle" />
+                <ProgressBar IsIndeterminate="True" Height="4" Margin="0,4,0,12" />
+            </StackPanel>
+
+            <ListBox Grid.Row="1" ItemsSource="{Binding LogLines}" Margin="0,12,0,0"
+                     FontFamily="Cascadia Mono, DejaVu Sans Mono, Liberation Mono, monospace" FontSize="12" />
+        </Grid>
+
+        <!-- ============ 3. Revisão das sobras ============ -->
+        <Grid Grid.Row="1" RowDefinitions="Auto,*,Auto" IsVisible="{Binding IsReviewStep}">
+            <DockPanel Margin="0,0,0,10">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
+                    <Button Content="Só confiança alta" Command="{Binding SelectHighCommand}" />
+                    <Button Content="Marcar todos" Command="{Binding SelectAllCommand}" />
+                    <Button Content="Desmarcar todos" Command="{Binding SelectNoneCommand}" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="Sobras encontradas" Classes="SectionTitle" Margin="0,0,0,2" />
+                    <TextBlock Text="{Binding ReviewSummary}" Classes="Muted" />
+                </StackPanel>
+            </DockPanel>
+
+            <DataGrid Grid.Row="1"
+                      ItemsSource="{Binding Leftovers}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      CanUserSortColumns="True"
+                      GridLinesVisibility="None"
+                      SelectionMode="Single">
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="" Width="44" CanUserSort="False">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding IsSelected}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="Confiança" Width="100" CanUserSort="False">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Classes="Badge" Classes.High="{Binding IsHigh}">
+                                    <TextBlock Text="{Binding ConfidenceText}" Foreground="White" FontSize="12" FontWeight="SemiBold" />
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTextColumn Header="Tipo" Binding="{Binding KindText}" Width="150" />
+
+                    <DataGridTemplateColumn Header="Item" Width="2.4*" CanUserSort="False">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,3" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Target}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Target}" />
+                                    <TextBlock Text="{Binding Details}" FontSize="11" Opacity="0.68" TextTrimming="CharacterEllipsis"
+                                               ToolTip.Tip="{Binding Details}" IsVisible="{Binding HasDetails}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTextColumn Header="Tamanho" Binding="{Binding Size}" Width="90" />
+                    <DataGridTextColumn Header="Por que foi encontrado" Binding="{Binding Reason}" Width="1.6*" />
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <DockPanel Grid.Row="2" Margin="0,14,0,0">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+                    <Button Content="Não remover nada" Command="{Binding SkipCleanupCommand}" />
+                    <Button Content="Mover selecionados para a quarentena" Command="{Binding RemoveCommand}"
+                            Classes="accent" Padding="20,6" />
+                </StackPanel>
+                <TextBlock Classes="Muted" VerticalAlignment="Center" FontSize="12"
+                           Text="Confiança alta: ligação comprovada com o programa. Média: encontrado pelo nome, confira antes." />
+            </DockPanel>
+        </Grid>
+
+        <!-- ============ 4. Concluído ============ -->
+        <Grid Grid.Row="1" RowDefinitions="Auto,*,Auto" IsVisible="{Binding IsDoneStep}">
+            <StackPanel>
+                <TextBlock Text="{Binding DoneTitle}" Classes="SectionTitle" />
+                <TextBlock Text="{Binding DoneSummary}" TextWrapping="Wrap" />
+            </StackPanel>
+
+            <ListBox Grid.Row="1" ItemsSource="{Binding LogLines}" Margin="0,14,0,0"
+                     FontFamily="Cascadia Mono, DejaVu Sans Mono, Liberation Mono, monospace" FontSize="12" />
+
+            <Button Grid.Row="2" Content="Fechar" Click="Close_Click" HorizontalAlignment="Right"
+                    Margin="0,14,0,0" Padding="24,6" Classes="accent" />
+        </Grid>
+    </Grid>
+</Window>

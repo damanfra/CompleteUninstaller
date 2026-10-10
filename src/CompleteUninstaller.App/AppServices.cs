@@ -4,6 +4,7 @@ using CompleteUninstaller.Infrastructure.Platform;
 using CompleteUninstaller.Infrastructure.Removal;
 using CompleteUninstaller.Infrastructure.Settings;
 using CompleteUninstaller.Infrastructure.Uninstall;
+using CompleteUninstaller.Updater;
 
 namespace CompleteUninstaller.App;
 
@@ -26,6 +27,8 @@ public sealed class AppServices
 
     public required UserSettingsStore Settings { get; init; }
 
+    public required UpdateService Updates { get; init; }
+
     public static AppServices Create()
     {
         var paths = SystemPaths.Detect();
@@ -40,6 +43,7 @@ public sealed class AppServices
             Quarantine = quarantine,
             RestorePoints = new RestorePointService(),
             Settings = new UserSettingsStore(),
+            Updates = new UpdateService(),
         };
     }
 }
