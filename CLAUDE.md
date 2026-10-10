@@ -21,6 +21,11 @@ Projeto pessoal do Daniel. Pasta: `C:\Users\daniel.msouza\Projetos\CompleteUnins
   `using System.IO;` no projeto WPF.
 - 07/10: adicionados ícones na lista e filtros "Ocultar itens do Windows" (ligado por padrão) e
   "Ocultar apps da Microsoft". Aguardando build/teste do Daniel.
+- 10/10: primeiro teste real (Elgato Stream Deck) funcionou. Ajustes pedidos: o log rola sozinho até o fim
+  (`App/Behaviors/AutoScroll.cs`), botão final "Concluir", e a tela de opções lembra o nível, o ponto de
+  restauração e a desinstalação silenciosa (`Infrastructure/Settings/UserSettings.cs`,
+  `%LocalAppData%\CompleteUninstaller\settings.json`). "Não executar o desinstalador" não é lembrado de propósito.
+  Aguardando build do Daniel.
 - ⏳ **Ainda não testado em uso real**: abrir o app, listar, desinstalar, revisar sobras, quarentena e restauração.
   Ao retomar, pergunte como foram esses testes e peça o log (`%ProgramData%\CompleteUninstaller\Logs`) se algo falhou.
 
@@ -58,7 +63,8 @@ Projeto pessoal do Daniel. Pasta: `C:\Users\daniel.msouza\Projetos\CompleteUnins
 | Execução do desinstalador | `Infrastructure/Uninstall/TrackedProcess.cs` (Job Object), `UninstallRunner.cs` |
 | Varredura | `Infrastructure/Leftovers/LeftoverScanner.cs` (orquestra), `ScanContext`, `InstallDirResolver`, `FolderScanner`, `ShortcutScanner`, `ServiceScanner`, `ScheduledTaskScanner` |
 | Remoção e quarentena | `Infrastructure/Removal/*`: `RemovalService`, `QuarantineStore`, `FileOps`, `ServiceOps`, `TaskOps`, `RestorePointService` |
-| UI | `App/Views/*Window.xaml`, `App/ViewModels/*` (assistente com passos `Options → Working → Review → Done`) |
+| UI | `App/Views/*Window.xaml`, `App/ViewModels/*` (assistente com passos `Options → Working → Review → Done`), `App/Behaviors/AutoScroll.cs` |
+| Preferências | `Infrastructure/Settings/UserSettings.cs` (últimas opções da desinstalação, em `%LocalAppData%`) |
 
 ## Regras de segurança (não negociáveis)
 

@@ -28,7 +28,7 @@ public sealed class UninstallViewModel : ObservableObject
     private CancellationTokenSource? _waitCts;
     private UninstallStep _step = UninstallStep.Options;
     private bool _isModerate;
-    private bool _createRestorePoint = true;
+    private bool _createRestorePoint;
     private bool _preferQuiet;
     private bool _skipUninstaller;
     private bool _isWaitingUninstaller;
@@ -42,6 +42,13 @@ public sealed class UninstallViewModel : ObservableObject
     {
         _services = services;
         App = app;
+
+        // Traz as últimas opções usadas. "Não executar o desinstalador" fica de fora de propósito:
+        // vale só para o programa em que foi marcada.
+        var options = services.Settings.Load().Uninstall;
+        _isModerate = options.Moderate;
+        _createRestorePoint = options.CreateRestorePoint;
+        _preferQuiet = options.PreferQuiet;
 
         StartCommand = new AsyncRelayCommand(StartAsync, () => Step == UninstallStep.Options);
         StopWaitingCommand = new RelayCommand(() => _waitCts?.Cancel(), () => IsWaitingUninstaller);
@@ -194,6 +201,7 @@ public sealed class UninstallViewModel : ObservableObject
 
     private async Task StartAsync()
     {
+        SaveOptions();
         Step = UninstallStep.Working;
         var progress = new Progress<string>(AddLog);
         var level = IsModerate ? CleanupLevel.Moderate : CleanupLevel.Safe;
@@ -332,6 +340,21 @@ public sealed class UninstallViewModel : ObservableObject
         DoneSummary = summary;
         AddLog(summary.Replace("\n", " ", StringComparison.Ordinal));
         Step = UninstallStep.Done;
+    }
+
+    private void SaveOptions()
+    {
+        var settings = _services.Settings.Load();
+        settings.Uninstall.Moderate = IsModerate;
+        settings.Uninstall.CreateRestorePoint = CreateRestorePoint;
+
+        // Sem opção silenciosa a caixa fica desabilitada: mantém a escolha anterior.
+        if (HasQuietOption)
+        {
+            settings.Uninstall.PreferQuiet = PreferQuiet;
+        }
+
+        _services.Settings.Save(settings);
     }
 
     private bool Ask(string message) => Confirm?.Invoke(message) ?? true;
