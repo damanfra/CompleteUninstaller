@@ -26,6 +26,9 @@ Projeto pessoal do Daniel. Pasta: `C:\Users\daniel.msouza\Projetos\CompleteUnins
   restauração e a desinstalação silenciosa (`Infrastructure/Settings/UserSettings.cs`,
   `%LocalAppData%\CompleteUninstaller\settings.json`). "Não executar o desinstalador" não é lembrado de propósito.
   Aguardando build do Daniel.
+- 10/10: pacote da Store (Forza Horizon 6) travou em "Executando o desinstalador": `RemovePackageAsync` não
+  respeitava o botão "O desinstalador já terminou". Agora respeita, mostra o progresso, pula pacote que já não está
+  registrado e registra no log o estado do pacote (`PackageStatus`).
 - ⏳ **Ainda não testado em uso real**: abrir o app, listar, desinstalar, revisar sobras, quarentena e restauração.
   Ao retomar, pergunte como foram esses testes e peça o log (`%ProgramData%\CompleteUninstaller\Logs`) se algo falhou.
 

@@ -36,7 +36,7 @@ public sealed class UninstallRunner
 
         if (plan.Method == UninstallMethod.StorePackage)
         {
-            return await RemovePackageAsync(plan.CommandLine, progress);
+            return await RemovePackageAsync(plan.CommandLine, progress, stopWaiting);
         }
 
         progress?.Report($"Executando: {plan.CommandLine}");
@@ -94,15 +94,63 @@ public sealed class UninstallRunner
             $"O desinstalador terminou (código {exitCode?.ToString() ?? "?"}).");
     }
 
-    private static async Task<UninstallOutcome> RemovePackageAsync(string packageFullName, IProgress<string>? progress)
+    private static async Task<UninstallOutcome> RemovePackageAsync(
+        string packageFullName,
+        IProgress<string>? progress,
+        CancellationToken stopWaiting)
     {
         try
         {
-            progress?.Report($"Removendo o pacote {packageFullName}...");
             var manager = new PackageManager();
-            var result = await manager.RemovePackageAsync(packageFullName);
+
+            // Pacote já removido por outro programa (ex.: app Xbox): não há o que desinstalar.
+            var package = manager.FindPackageForUser(string.Empty, packageFullName);
+            if (package is null)
+            {
+                Log.Info($"Pacote {packageFullName} não está mais registrado para este usuário.");
+                return new UninstallOutcome(UninstallStatus.Completed, null, "O pacote já não estava instalado.");
+            }
+
+            LogPackageStatus(package);
+            progress?.Report($"Removendo o pacote {packageFullName}...");
+
+            // O Windows executa uma operação de implantação por vez: se outra estiver em andamento
+            // (atualização da Store, Gaming Services), esta espera na fila sem dar sinal.
+            var lastReported = -1;
+            var deploymentProgress = new Progress<DeploymentProgress>(p =>
+            {
+                var step = (int)p.percentage / 10 * 10;
+                if (step > lastReported)
+                {
+                    lastReported = step;
+                    progress?.Report($"Remoção do pacote: {step}%");
+                }
+            });
+
+            var operation = manager.RemovePackageAsync(packageFullName);
+            var removal = operation.AsTask(deploymentProgress);
+            var stop = Task.Delay(Timeout.Infinite, stopWaiting);
+            if (await Task.WhenAny(removal, stop) != removal)
+            {
+                // Não espera o Cancel ser aceito: alguns pacotes (jogos) ignoram o pedido.
+                try
+                {
+                    operation.Cancel();
+                }
+                catch (Exception ex)
+                {
+                    Log.Warn($"Não foi possível cancelar a remoção de {packageFullName}: {ex.Message}");
+                }
+
+                Log.Info($"Usuário parou de aguardar a remoção do pacote {packageFullName}.");
+                return new UninstallOutcome(UninstallStatus.StoppedWaiting, null,
+                    "Você parou de aguardar a remoção do pacote. O Windows pode continuar a remoção em segundo plano.");
+            }
+
+            var result = await removal;
             if (result.ExtendedErrorCode is { } error)
             {
+                Log.Warn($"Remoção do pacote {packageFullName} falhou: 0x{error.HResult:X8} {result.ErrorText}");
                 return new UninstallOutcome(UninstallStatus.Failed, error.HResult, result.ErrorText);
             }
 
@@ -112,6 +160,36 @@ public sealed class UninstallRunner
         {
             Log.Error($"Falha removendo o pacote {packageFullName}", ex);
             return new UninstallOutcome(UninstallStatus.Failed, ex.HResult, $"Falha ao remover o pacote: {ex.Message}");
+        }
+    }
+
+    /// <summary>Registra no log o estado do pacote (ajuda a entender remoções que travam).</summary>
+    private static void LogPackageStatus(Windows.ApplicationModel.Package package)
+    {
+        try
+        {
+            var status = package.Status;
+            Log.Info(
+                $"Estado do pacote {package.Id.FullName}: OK={status.VerifyIsOK()}, NotAvailable={status.NotAvailable}, " +
+                $"Modified={status.Modified}, Tampered={status.Tampered}, Disabled={status.Disabled}, " +
+                $"DeploymentInProgress={status.DeploymentInProgress}, Servicing={status.Servicing}, " +
+                $"Local={SafePath(package)}");
+        }
+        catch (Exception ex)
+        {
+            Log.Warn($"Não foi possível ler o estado do pacote: {ex.Message}");
+        }
+    }
+
+    private static string SafePath(Windows.ApplicationModel.Package package)
+    {
+        try
+        {
+            return package.InstalledPath ?? "?";
+        }
+        catch (Exception ex)
+        {
+            return $"inacessível ({ex.Message})";
         }
     }
 }
