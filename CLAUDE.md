@@ -90,7 +90,9 @@ A versão (`vX.Y.Z`) aparece no título da janela e na barra de status.
 - Troca do arquivo: Windows renomeia o `.exe` em uso para `.old` e o apaga na próxima abertura; Linux troca por
   renomeação atômica e restaura `chmod`. Não funciona via `dotnet app.dll` nem em pasta sem permissão de escrita (avisa).
 - **Versão** vem da tag: a Action usa `-p:Version=1.2.3` (tag `v1.2.3`); sem tag é `0.0.0-dev`. Build local = `0.1.0`
-  (`Directory.Build.props`). Para lançar: `git tag v0.2.0 && git push origin v0.2.0`.
+  (`Directory.Build.props`). Para lançar: **Actions → Build → Run workflow**, branch `linux`, versão `0.2.0`
+  (a Action compila, cria a tag `v0.2.0` e publica a release; recusa versão já usada), ou `git tag v0.2.0 && git push origin v0.2.0`.
+  O ambiente de nuvem do Claude não consegue enviar tags: lá, use o Run workflow.
 - Nada do fluxo de rede/troca foi testado com uma release real ainda: só com servidor simulado nos testes.
 
 Limitações conhecidas: só o usuário atual é varrido (não os outros `/home/*`); sem cron; `~/.mozilla`-style
